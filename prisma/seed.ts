@@ -4,29 +4,46 @@ const bcrypt = require('bcryptjs')
 const prisma = new PrismaClient()
 
 async function main() {
-  const email = 'admin@example.com'
-  const password = 'admin123'
-
-  const existingUser = await prisma.user.findUnique({
-    where: { email },
-  })
-
-  if (existingUser) {
-    console.log('✅ Admin déjà existant')
-    return
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10)
-
-  await prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
+  const users = [
+    {
+      email: 'admin@example.com',
+      password: 'admin123',
       role: 'admin',
     },
-  })
+    {
+      email: 'user@example.com',
+      password: 'user123',
+      role: 'user',
+    },
+    {
+      email: 'driver@example.com',
+      password: 'driver123',
+      role: 'driver',
+    },
+  ]
 
-  console.log('✅ Utilisateur admin créé avec succès')
+  for (const user of users) {
+    const existing = await prisma.user.findUnique({
+      where: { email: user.email },
+    })
+
+    if (existing) {
+      console.log(`🔁 Utilisateur déjà existant : ${user.email}`)
+      continue
+    }
+
+    const hashedPassword = await bcrypt.hash(user.password, 10)
+
+    await prisma.user.create({
+      data: {
+        email: user.email,
+        password: hashedPassword,
+        role: user.role,
+      },
+    })
+
+    console.log(`✅ Utilisateur créé : ${user.email}`)
+  }
 }
 
 main()
