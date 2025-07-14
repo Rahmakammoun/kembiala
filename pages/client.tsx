@@ -36,6 +36,7 @@ export default function CustomerDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
+  const [searchTerm, setSearchTerm] = useState('')
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
 const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null)
@@ -206,13 +207,24 @@ const handleUpdate = async (e: React.FormEvent) => {
           <div className="bg-white rounded-lg shadow-md p-6 overflow-auto">
             <div className="mb-6">
             <div className="relative mb-6">
+  <div className="flex items-center justify-between mb-4">
   <h1 className="text-2xl font-bold">Liste des clients</h1>
+  
   <button
     onClick={() => setShowModal(true)}
-    className="absolute top-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded"
+    className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded ml-4"
   >
     <FaPlus />
   </button>
+ 
+</div>
+ <input
+    type="text"
+    placeholder="🔍 Rechercher un client..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="border p-2 rounded w-60 mb-4"
+  />
 </div>
 
           </div>
@@ -228,7 +240,18 @@ const handleUpdate = async (e: React.FormEvent) => {
                 </tr>
               </thead>
               <tbody>
-                {customers.map((customer) => (
+            {customers
+  .filter((customer) => {
+    const query = searchTerm.toLowerCase()
+    const date = new Date(customer.createdAt).toLocaleDateString('fr-FR')
+    return (
+      customer.nom.toLowerCase().includes(query) ||
+      customer.prenom.toLowerCase().includes(query) ||
+      customer.email.toLowerCase().includes(query) ||
+      date.includes(query)
+    )
+  })
+  .map((customer) => (
                   <tr key={customer.id} className="hover:bg-gray-50">
                     <td className="border px-4 py-2">{customer.nom}</td>
                     <td className="border px-4 py-2">{customer.prenom}</td>
