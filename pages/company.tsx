@@ -195,7 +195,8 @@ const handleSaveCompany = async () => {
   return (
     <div className="flex min-h-screen bg-blue-50 text-gray-900">
       <Sidebar />
-      <main className="flex-1 flex flex-col overflow-auto ml-64 mt-12 p-2">
+      <main className="flex-1 flex flex-col overflow-auto ml-0 md:ml-64 mt-12 p-2 transition-all duration-300">
+
         <div className="shadow bg-white">
           <Header />
         </div>
@@ -203,47 +204,49 @@ const handleSaveCompany = async () => {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h1 className="text-2xl font-bold mb-4">Personal Information</h1>
 
-            <h2 className="text-lg font-semibold mb-2">Company Information</h2>
-            <div className="space-y-3 mb-6">
-              <div>
-                <label>Company Name:</label>
-                <input
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-              <div>
-                <label>Address:</label>
-                <input
-                  value={form.address}
-                  onChange={(e) => setForm({ ...form, address: e.target.value })}
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-              <div>
-                <label>Lieu:</label>
-                <input
-                  value={form.lieu}
-                  onChange={(e) => setForm({ ...form, lieu: e.target.value })}
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-              <div>
-                <label>Aval:</label>
-                <input
-                  value={form.aval}
-                  onChange={(e) => setForm({ ...form, aval: e.target.value })}
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-              <button
-                onClick={handleSaveCompany}
-                className="bg-blue-600 text-white px-4 py-2 rounded mt-2"
-              >
-                Save Changes
-              </button>
-            </div>
+            <h2 className="text-lg font-semibold mb-4">Company Information</h2>
+<div className="space-y-3 mb-6">
+  <div className="flex items-center mb-3">
+    <label className="w-40 font-medium">Company Name:</label>
+    <input
+      value={form.name}
+      onChange={(e) => setForm({ ...form, name: e.target.value })}
+      className="flex-1 border p-2 rounded"
+    />
+  </div>
+  <div className="flex items-center mb-3">
+    <label className="w-40 font-medium">Address:</label>
+    <input
+      value={form.address}
+      onChange={(e) => setForm({ ...form, address: e.target.value })}
+      className="flex-1 border p-2 rounded"
+    />
+  </div>
+  <div className="flex items-center mb-3">
+    <label className="w-40 font-medium">Lieu:</label>
+    <input
+      value={form.lieu}
+      onChange={(e) => setForm({ ...form, lieu: e.target.value })}
+      className="flex-1 border p-2 rounded"
+    />
+  </div>
+  <div className="flex items-center mb-3">
+    <label className="w-40 font-medium">Aval:</label>
+    <input
+      value={form.aval}
+      onChange={(e) => setForm({ ...form, aval: e.target.value })}
+      className="flex-1 border p-2 rounded"
+    />
+  </div>
+  <div className="flex justify-end">
+    <button
+      onClick={handleSaveCompany}
+      className="bg-blue-600 text-white px-4 py-2 rounded mt-2"
+    >
+      Save Changes
+    </button>
+  </div>
+</div>
 
             <h2 className="text-lg font-semibold mt-8 mb-2">Bank Information</h2>
             <div className="flex items-center justify-between mb-3">
