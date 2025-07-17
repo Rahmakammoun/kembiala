@@ -33,6 +33,8 @@ export default function Dashboard() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
 
+  const [searchTerm, setSearchTerm] = useState('')
+
   const [showModal, setShowModal] = useState(false)
  const [newUserEmail, setNewUserEmail] = useState('')
 
@@ -150,36 +152,52 @@ const handleCreateUser = async (e: React.FormEvent) => {
           >
             <FaPlus />
           </button>
+          
         )}
-
         </div>
-
+        <input
+          type="text"
+          placeholder="🔍 Rechercher utilisateur..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border p-2 rounded w-80 mb-4"
+        />
         <table className="min-w-full border border-gray-300">
           <thead>
             <tr className="bg-gray-100">
               <th className="border px-4 py-2 text-left">Email</th>
               <th className="border px-4 py-2 text-left">Rôle</th>
-              <th className="border px-4 py-2 text-left">Actions</th>
+              {session?.user?.role === 'admin' && (
+                <th className="border px-4 py-2 text-left">Actions</th>
+              )}
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {users
+              .filter((user) => {
+                const query = searchTerm.toLowerCase()
+                return (
+                  user.email.toLowerCase().includes(query) ||
+                  user.role.toLowerCase().includes(query)
+                )
+              })
+              .map((user) => (
               <tr key={user.id} className="hover:bg-gray-50">
                 <td className="border px-4 py-2">{user.email}</td>
                 <td className="border px-4 py-2">{user.role}</td>
-                <td className="border px-4 py-2">
-                  <div className="flex items-center space-x-4">
-                    
-                    <button
-                      aria-label="Supprimer"
-                      className="text-red-900 hover:text-red-800"
-                     onClick={() => requestDelete(user)}
-
-                    >
-                      <FaTrashAlt size={20} />
-                    </button>
-                  </div>
-                </td>
+                {session?.user?.role === 'admin' && (
+                    <td className="border px-4 py-2">
+                      <div className="flex items-center space-x-4">
+                        <button
+                          aria-label="Supprimer"
+                          className="text-red-900 hover:text-red-800"
+                          onClick={() => requestDelete(user)}
+                        >
+                          <FaTrashAlt size={20} />
+                        </button>
+                      </div>
+                    </td>
+                  )}
               </tr>
             ))}
           </tbody>
