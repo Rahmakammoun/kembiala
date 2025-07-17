@@ -28,6 +28,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 }
 export default function Dashboard() {
+    const [sidebarOpen, setSidebarOpen] = useState(false)
+
   const { data: session, status } = useSession()
   const router = useRouter()
   const [users, setUsers] = useState<User[]>([])
@@ -132,14 +134,14 @@ const handleCreateUser = async (e: React.FormEvent) => {
 
 
   return (
-    <div className="flex min-h-screen bg-blue-50 text-gray-900">
-      
-      
-      <Sidebar />
-
-      <main className="flex-1 flex flex-col overflow-auto ml-64 mt-12 p-2">
-         <div className="shadow bg-white">
-        <Header />
+     <div className="flex min-h-screen bg-blue-50 text-gray-900">
+    
+          <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+    
+          <main className={`flex-1 flex flex-col overflow-auto mt-12 p-2 transition-all duration-300
+              ${sidebarOpen ? 'ml-64' : 'ml-0'} md:ml-64`}>
+            <div className="shadow bg-white">
+              <Header />
         </div>
         <div className="flex-1 p-6 overflow-auto">
           <div className="bg-white rounded-lg shadow-md p-6">

@@ -1,15 +1,17 @@
-// components/sidebar.tsx
 'use client'
 
-import { useState } from 'react'
 import { FaBars, FaPlus, FaTimes } from 'react-icons/fa'
 import { usePathname, useRouter } from 'next/navigation'
 import clsx from 'clsx'
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
 
   const isActive = (path: string) => pathname === path
 
@@ -31,21 +33,17 @@ export default function Sidebar() {
       )}
 
       {/* Sidebar */}
-<aside
-  className={clsx(
-    'bg-blue-900 text-white flex flex-col p-4 fixed top-0 left-0 h-screen w-64 z-40',
-    isOpen ? 'translate-x-0' : '-translate-x-full',
-    'md:translate-x-0'
-  )}
->
-
+      <aside
+        className={clsx(
+          'bg-blue-900 text-white flex flex-col p-4 fixed top-0 left-0 h-screen w-64 z-40 transition-transform duration-300',
+          isOpen ? 'translate-x-0' : '-translate-x-full',
+          'md:translate-x-0'
+        )}
+      >
         {/* Header section with title and close button (only on mobile) */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">Kembiala</h2>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="md:hidden text-white"
-          >
+          <button onClick={() => setIsOpen(false)} className="md:hidden text-white">
             <FaTimes />
           </button>
         </div>
