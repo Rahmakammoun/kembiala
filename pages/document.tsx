@@ -58,7 +58,7 @@ export default function DocumentForm() {
       .then(data => {
         const fetchedCompany: Company = data.company
         setCompany(fetchedCompany)
-        setSelectedBank(fetchedCompany?.banks?.[0] || null)
+        setSelectedBank( null)
       })
       .catch(err => console.error('Erreur chargement société:', err))
 
@@ -71,16 +71,7 @@ export default function DocumentForm() {
       .catch(err => console.error('Erreur chargement clients:', err))
   }, [])
 
-  useEffect(() => {
-    fetch('/api/company/get')
-      .then(res => res.json())
-      .then(data => {
-        const fetchedCompany: Company = data.company
-        setCompany(fetchedCompany)
-        setSelectedBank(fetchedCompany?.banks?.[0] || null)
-      })
-      .catch(err => console.error('Erreur chargement société:', err))
-  }, [])
+ 
 
  /*  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -159,6 +150,7 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
                 }}
                 className="flex-1 border p-2 rounded"
                 >
+                    <option value="">-- Choisir une banque --</option>
                 {company?.banks?.map((bank) => (
                     <option key={bank.id} value={bank.bankName}>{bank.bankName}</option>
                 ))}
