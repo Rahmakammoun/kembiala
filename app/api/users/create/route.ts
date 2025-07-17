@@ -1,3 +1,4 @@
+// app/api/users/create/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { PrismaClient } from '@prisma/client'

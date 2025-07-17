@@ -199,7 +199,7 @@ const handleUpdate = async (e: React.FormEvent) => {
   return (
     <div className="flex min-h-screen bg-blue-50 text-gray-900">
       <Sidebar />
-      <main className="flex-1 flex flex-col overflow-auto">
+      <main className="flex-1 flex flex-col overflow-auto ml-64 mt-12 p-2">
         <div className="shadow bg-white">
           <Header />
         </div>

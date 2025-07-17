@@ -1,3 +1,4 @@
+// pages/auth/login.tsx
 import { signIn } from 'next-auth/react'
 import { useEffect,useState } from 'react'
 import { useRouter } from 'next/router'

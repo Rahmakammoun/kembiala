@@ -90,7 +90,7 @@ export default function Header() {
   }
 
   return (
-    <header className="w-full bg-gray-100 shadow p-4 flex items-center relative">
+    <header className="fixed top-0 left-64 right-0 bg-gray-100 shadow p-4 flex items-center z-50 h-16">
       {/* Titre ou logo à gauche (optionnel) */}
 
       {session?.user && (
