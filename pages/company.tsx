@@ -280,13 +280,17 @@ const handleSaveCompany = async () => {
                     onChange={(e) => setNewBank({ ...newBank, bankName: e.target.value })}
                     className="border p-2 rounded w-full mb-2"
                   />
-                  <input
-                    type="text"
-                    placeholder="RIB"
-                    value={newBank.rib}
-                    onChange={(e) => setNewBank({ ...newBank, rib: e.target.value })}
-                    className="border p-2 rounded w-full mb-2"
-                  />
+                 <input
+  type="number"
+  placeholder="RIB"
+  value={newBank.rib}
+  onChange={(e) => {
+    if (e.target.value.length <= 20) {
+      setNewBank({ ...newBank, rib: e.target.value })
+    }
+  }}
+  className="border p-2 rounded w-full mb-2"
+/>
                   <div className="flex space-x-2">
                    <button
                       onClick={async () => {

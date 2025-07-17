@@ -78,6 +78,16 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
           >
             <FaPlus /> Info Personnelles
           </button>
+
+          <button
+            onClick={() => handleNavigation('/document')}
+            className={clsx(
+              'flex items-center gap-2 px-3 py-2 rounded w-full',
+              isActive('/document') ? 'bg-blue-600' : 'hover:bg-blue-800'
+            )}
+          >
+            <FaPlus /> Document
+          </button>
         </nav>
       </aside>
     </>
