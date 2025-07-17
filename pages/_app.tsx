@@ -1,3 +1,4 @@
+// pages/_app.tsx
 import { SessionProvider } from 'next-auth/react'
 import type { AppProps } from 'next/app'
 import '../app/globals.css' // adapte le chemin si nécessaire
