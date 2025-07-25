@@ -89,6 +89,35 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 
   setForm(updatedForm)
 }
+const handlePrint = async () => {
+  if (!form.echeance || !selectedBank || !form.beneficiaire || !form.montant) {
+    alert('Veuillez remplir tous les champs obligatoires.')
+    return
+  }
+
+  try {
+    const response = await fetch('/api/bills/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: form.montant,
+        millimes: form.millimes,
+        dueDate: form.echeance,
+        customerName: form.beneficiaire,
+        bankName: selectedBank.bankName,
+      }),
+    })
+
+    const data = await response.json()
+    if (!response.ok) throw new Error(data.message || 'Erreur API')
+
+    alert('kembiala enregistrée avec succès !')
+   
+  } catch (err) {
+    console.error('Erreur enregistrement kembiala:', err)
+    alert('Erreur enregistrement facture')
+  }
+}
 
 
   return (
@@ -229,7 +258,7 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 
               <div className="flex justify-end mt-6 gap-4">
                 <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Print Preview</button>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Print</button>
+                <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onClick={handlePrint}>Print</button>
               </div>
             </div>
           </div>

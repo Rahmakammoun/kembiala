@@ -239,8 +239,7 @@ const handleUpdate = async (e: React.FormEvent) => {
             <table className="min-w-full border border-gray-300">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border px-4 py-2 text-left">Nom</th>
-                  <th className="border px-4 py-2 text-left">Prénom</th>
+                  <th className="border px-4 py-2 text-left">Client Name</th>
                   <th className="border px-4 py-2 text-left">Email</th>
                   <th className="border px-4 py-2 text-left">Date de création</th>
                   <th className="border px-4 py-2 text-left">Actions</th>
@@ -260,8 +259,7 @@ const handleUpdate = async (e: React.FormEvent) => {
   })
   .map((customer) => (
                   <tr key={customer.id} className="hover:bg-gray-50">
-                    <td className="border px-4 py-2">{customer.nom}</td>
-                    <td className="border px-4 py-2">{customer.prenom}</td>
+                    <td className="border px-4 py-2 capitalize">{customer.nom} {customer.prenom}</td>
                     <td className="border px-4 py-2">{customer.email}</td>
                     <td className="border px-4 py-2">
                       {new Date(customer.createdAt).toLocaleDateString()}

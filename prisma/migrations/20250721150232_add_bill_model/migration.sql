@@ -1,0 +1,12 @@
+-- CreateTable
+CREATE TABLE "bills" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "amount" REAL NOT NULL,
+    "dueDate" DATETIME NOT NULL,
+    "status" TEXT NOT NULL,
+    "creationDate" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "customerId" INTEGER NOT NULL,
+    "bankId" INTEGER NOT NULL,
+    CONSTRAINT "bills_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "bills_bankId_fkey" FOREIGN KEY ("bankId") REFERENCES "Bank" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);

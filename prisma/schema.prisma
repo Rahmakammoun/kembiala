@@ -6,47 +6,67 @@
 
 generator client {
   provider = "prisma-client-js"
-
 }
 
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
 model User {
   id       Int    @id @default(autoincrement())
   email    String @unique
   password String
   role     String @default("user")
 }
+
 model Customer {
   id        Int      @id @default(autoincrement())
   nom       String
   prenom    String
   email     String   @unique
   createdAt DateTime @default(now())
+
+  bills Bill[] 
 }
 
 model Company {
-  id       Int     @id @default(autoincrement())
-  name     String
-  address  String
-  lieu     String
-  aval     String
+  id      Int    @id @default(autoincrement())
+  name    String
+  address String
+  lieu    String
+  aval    String
 
-  banks    Bank[]  // 1 company → plusieurs banques
+  banks Bank[] 
 }
 
 model Bank {
-  id         Int     @id @default(autoincrement())
-  bankName   String
-  rib        String
-  companyId  Int
+  id        Int    @id @default(autoincrement())
+  bankName  String
+  rib       String
+  companyId Int
 
-  company    Company @relation(fields: [companyId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
+  bills   Bill[] 
 }
 
+model Bill {
+  id           Int        @id @default(autoincrement())
+  amount       Float
+  dueDate      DateTime
+  status       BillStatus
+  creationDate DateTime   @default(now())
 
+  customerId Int
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
+  bankId Int
+  bank   Bank @relation(fields: [bankId], references: [id], onDelete: Cascade)
 
+  @@map("bills")
+}
 
+enum BillStatus {
+  payé
+  non_payé
+}

@@ -86,7 +86,16 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
               isActive('/document') ? 'bg-blue-600' : 'hover:bg-blue-800'
             )}
           >
-            <FaPlus /> Document
+            <FaPlus /> Documents
+          </button>
+          <button
+            onClick={() => handleNavigation('/bill')}
+            className={clsx(
+              'flex items-center gap-2 px-3 py-2 rounded w-full',
+              isActive('/bill') ? 'bg-blue-600' : 'hover:bg-blue-800'
+            )}
+          >
+            <FaPlus /> lettres de change
           </button>
         </nav>
       </aside>
