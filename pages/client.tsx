@@ -12,7 +12,6 @@ import { FaEdit, FaTrashAlt, FaPlus } from 'react-icons/fa'
 type Customer = {
   id: number
   nom: string
-  prenom: string
   email: string
   createdAt: string
 }
@@ -61,8 +60,8 @@ useEffect(() => {
 
   const [showModal, setShowModal] = useState(false)
     const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null)
-const [form, setForm] = useState({ nom: '', prenom: '', email: '' })
-  const [editForm, setEditForm] = useState({ nom: '', prenom: '', email: '' })
+const [form, setForm] = useState({ nom: '', email: '' })
+  const [editForm, setEditForm] = useState({ nom: '', email: '' })
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/auth/login')
     if (status === 'authenticated') fetchCustomers()
@@ -130,7 +129,7 @@ const handleCreate = async (e: React.FormEvent) => {
 
   if (res.ok) {
     setShowModal(false)
-    setForm({ nom: '', prenom: '', email: '' })
+    setForm({ nom: '', email: '' })
     fetchCustomers()
     setPopup({
       type: 'success',
@@ -150,7 +149,6 @@ const openEditModal = (customer: Customer) => {
     setEditingCustomer(customer)
     setEditForm({
       nom: customer.nom,
-      prenom: customer.prenom,
       email: customer.email,
     })
   }
@@ -252,14 +250,13 @@ const handleUpdate = async (e: React.FormEvent) => {
     const date = new Date(customer.createdAt).toLocaleDateString('fr-FR')
     return (
       customer.nom.toLowerCase().includes(query) ||
-      customer.prenom.toLowerCase().includes(query) ||
       customer.email.toLowerCase().includes(query) ||
       date.includes(query)
     )
   })
   .map((customer) => (
                   <tr key={customer.id} className="hover:bg-gray-50">
-                    <td className="border px-4 py-2 capitalize">{customer.nom} {customer.prenom}</td>
+                    <td className="border px-4 py-2 capitalize">{customer.nom}</td>
                     <td className="border px-4 py-2">{customer.email}</td>
                     <td className="border px-4 py-2">
                       {new Date(customer.createdAt).toLocaleDateString()}
@@ -300,14 +297,6 @@ const handleUpdate = async (e: React.FormEvent) => {
                       className="w-full border p-2 rounded"
                       value={form.nom}
                       onChange={(e) => setForm({ ...form, nom: e.target.value })}
-                      required
-                    />
-                    <input
-                      type="text"
-                      placeholder="Prénom"
-                      className="w-full border p-2 rounded"
-                      value={form.prenom}
-                      onChange={(e) => setForm({ ...form, prenom: e.target.value })}
                       required
                     />
                     <input
@@ -358,13 +347,6 @@ const handleUpdate = async (e: React.FormEvent) => {
                       required
                     />
                     <input
-                      type="text"
-                      className="w-full border p-2 rounded"
-                      value={editForm.prenom}
-                      onChange={(e) => setEditForm({ ...editForm, prenom: e.target.value })}
-                      required
-                    />
-                    <input
                       type="email"
                       className="w-full border p-2 rounded"
                       value={editForm.email}
@@ -403,7 +385,7 @@ const handleUpdate = async (e: React.FormEvent) => {
       <p className="mb-4">
         Êtes-vous sûr de vouloir supprimer{' '}
         <span className="font-semibold">
-          {customerToDelete.nom} {customerToDelete.prenom}
+          {customerToDelete.nom}
         </span>
         ?
       </p>

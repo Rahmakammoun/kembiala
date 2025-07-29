@@ -23,7 +23,6 @@ model User {
 model Customer {
   id        Int      @id @default(autoincrement())
   nom       String
-  prenom    String
   email     String   @unique
   createdAt DateTime @default(now())
 
@@ -56,6 +55,9 @@ model Bill {
   dueDate      DateTime
   status       BillStatus
   creationDate DateTime   @default(now())
+  companyName String
+  aval        String
+  lieu        String
 
   customerId Int
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)

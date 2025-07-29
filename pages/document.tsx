@@ -3,6 +3,7 @@
 import { useEffect, useState, ChangeEvent,useRef } from 'react'
 import Header from '../components/header'
 import Sidebar from '../components/sidebar'
+import "../app/globals.css";
 
 type Bank = {
   id: string
@@ -21,10 +22,13 @@ type Company = {
 type Customer = {
   id: number
   nom: string
-  prenom: string
+ 
 }
 
 type FormData = {
+  name: string
+  aval: string
+  lieu: string
   echeance: string
   rib1: string
   rib2: string
@@ -44,11 +48,14 @@ export default function DocumentForm() {
   const [dateCreation] = useState(() => new Date().toISOString().split('T')[0])
 
   const [form, setForm] = useState<FormData>({
+    name: '',
     echeance: '',
     rib1: '', rib2: '', rib3: '', rib4: '',
     montant: '', millimes: '',
     beneficiaire: '',
     montantLettre: '',
+    aval: '',
+    lieu: '',
   })
 
     useEffect(() => {
@@ -58,6 +65,14 @@ export default function DocumentForm() {
       .then(data => {
         const fetchedCompany: Company = data.company
         setCompany(fetchedCompany)
+
+         setForm(prevForm => ({
+        ...prevForm,
+        name: `${fetchedCompany.name}, ${fetchedCompany.address}`,
+        aval: fetchedCompany.aval,
+        lieu: fetchedCompany.lieu,
+      }))
+
         setSelectedBank( null)
       })
       .catch(err => console.error('Erreur chargement société:', err))
@@ -89,7 +104,7 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 
   setForm(updatedForm)
 }
-const handlePrint = async () => {
+/* const handlePrint = async () => {
   if (!form.echeance || !selectedBank || !form.beneficiaire || !form.montant) {
     alert('Veuillez remplir tous les champs obligatoires.')
     return
@@ -117,7 +132,78 @@ const handlePrint = async () => {
     console.error('Erreur enregistrement kembiala:', err)
     alert('Erreur enregistrement facture')
   }
+} */
+
+  const handlePrint = async () => {
+  if (!form.echeance || !selectedBank || !form.beneficiaire || !form.montant) {
+    alert('Veuillez remplir tous les champs obligatoires.')
+    return
+  }
+
+  try {
+    // Sauvegarde
+    const response = await fetch('/api/bills/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: form.montant,
+        millimes: form.millimes,
+        dueDate: form.echeance,
+        companyName: form.name,
+        aval: form.aval,
+        lieu: form.lieu,
+        customerName: form.beneficiaire,
+        bankName: selectedBank.bankName,
+      }),
+    })
+
+    const data = await response.json()
+    if (!response.ok) throw new Error(data.message || 'Erreur API')
+
+    alert('Kembiala enregistrée avec succès !')
+
+    // Déclenche impression
+    window.print()
+
+  } catch (err) {
+    console.error('Erreur enregistrement kembiala:', err)
+    alert('Erreur enregistrement kembiala')
+  }
 }
+
+
+
+ const handlePrintPreview = async () => {
+  if (!form.echeance || !selectedBank || !form.beneficiaire || !form.montant) {
+    alert('Veuillez remplir tous les champs obligatoires.')
+    return
+  }
+
+  try {
+    
+
+    
+    const ribFull = [form.rib1, form.rib2, form.rib3, form.rib4].join('')
+    const query = new URLSearchParams({
+      companyName: form.name || '',
+      lieu: form.lieu || '',
+      creationDate: dateCreation,
+      dueDate: form.echeance,
+      rib: ribFull,
+      amount: `${form.montant}.${form.millimes}`,
+      customer: form.beneficiaire,
+      amountLettre: form.montantLettre,
+      bank: selectedBank.bankName,
+      aval: form.aval || '',
+    }).toString()
+
+    window.open(`print?${query}`, '_blank')
+  } catch (err) {
+    console.error('Erreur enregistrement kembiala:', err)
+    alert('Erreur enregistrement facture')
+  }
+}
+
 
 
   return (
@@ -136,9 +222,26 @@ const handlePrint = async () => {
             <h1 className="text-2xl font-bold mb-6">Création Document</h1>
 
             <div className="space-y-4">
-              <Input label="Adresse du tiré" value={`${company?.name || ''}, ${company?.address || ''}`} readOnly />
-              <Input label="Aval" value={company?.aval || ''} readOnly />
-              <Input label="Lieu de création" value={company?.lieu || ''} readOnly />
+              <Input
+              label="Adresse du tiré"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+            />
+                          <Input
+              label="Aval"
+              name="aval"
+              value={form.aval}
+              onChange={handleChange}
+            />
+
+            <Input
+              label="Lieu de création"
+              name="lieu"
+              value={form.lieu}
+              onChange={handleChange}
+            />
+
               <Input label="Date de création" value={dateCreation}  type="date" />
               <Input label="Date d'échéance" name="echeance" value={form.echeance} onChange={handleChange} type="date" />
 
@@ -233,8 +336,8 @@ const handlePrint = async () => {
   >
     <option value="">-- Choisir un bénéficiaire --</option>
     {customers.map(customer => (
-      <option key={customer.id} value={`${customer.nom} ${customer.prenom}`}>
-        {customer.nom} {customer.prenom}
+      <option key={customer.id} value={`${customer.nom} `}>
+        {customer.nom} 
       </option>
     ))}
   </select>
@@ -257,14 +360,18 @@ const handlePrint = async () => {
              
 
               <div className="flex justify-end mt-6 gap-4">
-                <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Print Preview</button>
+                <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"onClick={handlePrintPreview}>Print Preview</button>
                 <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onClick={handlePrint}>Print</button>
               </div>
             </div>
           </div>
         </div>
+
+       
+
       </main>
     </div>
+    
   )
 }
 
