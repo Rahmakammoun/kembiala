@@ -51,6 +51,7 @@ model Bank {
 
 model Bill {
   id           Int        @id @default(autoincrement())
+  numero       String
   amount       Float
   dueDate      DateTime
   status       BillStatus
