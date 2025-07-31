@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 
 export async function GET() {
   const customers = await prisma.customer.findMany({
-    select: { id: true, nom:true,prenom:true, email: true,createdAt : true },
+    select: { id: true, nom:true, email: true,createdAt : true },
   })
 
   return NextResponse.json({ customers })

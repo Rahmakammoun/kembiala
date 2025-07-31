@@ -14,9 +14,11 @@ export async function GET() {
       },
     })
 
+
     const formatted = bills.map(bill => ({
+      
       id: bill.id,
-      clientName: `${bill.customer.nom} ${bill.customer.prenom}`,
+      clientName: `${bill.customer.nom}`,
       amount: bill.amount,
       dueDate: bill.dueDate.toISOString().split('T')[0],
       status: bill.status,
@@ -24,9 +26,15 @@ export async function GET() {
       bankAgency: bill.bank.bankName,
        customerId: bill.customer.id,
         bankId: bill.bank.id,
+        companyName: bill.companyName,
+        aval: bill.aval,
+        lieu: bill.lieu,
+        
     }))
+    
 
     return NextResponse.json(formatted)
+    
   } catch (error) {
     console.error('[GET /api/bills]', error)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })

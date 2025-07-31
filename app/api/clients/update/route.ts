@@ -6,15 +6,15 @@ const prisma = new PrismaClient()
 
 export async function PUT(req: NextRequest) {
   try {
-    const { id, nom, prenom, email } = await req.json()
+    const { id, nom,  email } = await req.json()
 
-    if (!id || !nom || !prenom || !email) {
+    if (!id || !nom || !email) {
       return NextResponse.json({ error: 'Champs manquants' }, { status: 400 })
     }
 
     const updated = await prisma.customer.update({
       where: { id: Number(id) },
-      data: { nom, prenom, email },
+      data: { nom,  email },
     })
 
     return NextResponse.json({ customer: updated })

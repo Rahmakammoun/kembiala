@@ -253,14 +253,7 @@ const handleSaveCompany = async () => {
 
             <h2 className="text-lg font-semibold mt-8 mb-2">Bank Information</h2>
             <div className="flex items-center justify-between mb-3">
-              <div className="flex space-x-2">
-                <button className="bg-blue-600 text-white px-3 py-2 rounded"
-                onClick={() => setShowAddBankForm(prev => !prev)}>
-                  <FaPlus className="inline mr-1" />
-                  Add Bank
-                </button>
-                
-              </div>
+              
               <input
                 type="text"
                 placeholder="🔍 Rechercher une banque..."
@@ -268,11 +261,28 @@ const handleSaveCompany = async () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="border p-2 rounded"
               />
+              <div className="flex space-x-2">
+              <button
+              className="bg-blue-600 text-white px-3 py-2 rounded"
+              onClick={() => {
+                setEditBankId(null) // <- Ajouté pour forcer le mode "Ajout"
+                setNewBank({ bankName: '', rib: '' }) // vide les champs
+                setShowAddBankForm(prev => !prev)
+              }}
+            >
+              <FaPlus className="inline mr-1" />
+              Add Bank
+            </button>
+
+                
+              </div>
             </div>
               {showAddBankForm && (
                 <div className="mt-4 mb-6 p-4 border rounded bg-gray-100">
 
-                  <h3 className="font-semibold mb-2">Add New Bank</h3>
+                  <h3 className="font-semibold mb-2">
+                    {editBankId ? 'Modifier Bank' : 'Add New Bank'}
+                  </h3>
                   <input
                     type="text"
                     placeholder="Bank Name"

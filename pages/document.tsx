@@ -22,11 +22,13 @@ type Company = {
 type Customer = {
   id: number
   nom: string
-  prenom: string
+ 
 }
 
 type FormData = {
   name: string
+  aval: string
+  lieu: string
   echeance: string
   rib1: string
   rib2: string
@@ -52,6 +54,8 @@ export default function DocumentForm() {
     montant: '', millimes: '',
     beneficiaire: '',
     montantLettre: '',
+    aval: '',
+    lieu: '',
   })
 
     useEffect(() => {
@@ -64,7 +68,9 @@ export default function DocumentForm() {
 
          setForm(prevForm => ({
         ...prevForm,
-        name: `${fetchedCompany.name}, ${fetchedCompany.address}`
+        name: `${fetchedCompany.name}, ${fetchedCompany.address}`,
+        aval: fetchedCompany.aval,
+        lieu: fetchedCompany.lieu,
       }))
 
         setSelectedBank( null)
@@ -143,6 +149,9 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         amount: form.montant,
         millimes: form.millimes,
         dueDate: form.echeance,
+        companyName: form.name,
+        aval: form.aval,
+        lieu: form.lieu,
         customerName: form.beneficiaire,
         bankName: selectedBank.bankName,
       }),
@@ -158,7 +167,7 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 
   } catch (err) {
     console.error('Erreur enregistrement kembiala:', err)
-    alert('Erreur enregistrement facture')
+    alert('Erreur enregistrement kembiala')
   }
 }
 
@@ -177,7 +186,7 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const ribFull = [form.rib1, form.rib2, form.rib3, form.rib4].join('')
     const query = new URLSearchParams({
       companyName: form.name || '',
-      lieu: company?.lieu || '',
+      lieu: form.lieu || '',
       creationDate: dateCreation,
       dueDate: form.echeance,
       rib: ribFull,
@@ -185,8 +194,7 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
       customer: form.beneficiaire,
       amountLettre: form.montantLettre,
       bank: selectedBank.bankName,
-      aval: company?.aval || '',
-      address: company?.address || '',
+      aval: form.aval || '',
     }).toString()
 
     window.open(`print?${query}`, '_blank')
@@ -215,13 +223,25 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 
             <div className="space-y-4">
               <Input
-  label="Adresse du tiré"
-  name="name"
-  value={form.name}
-  onChange={handleChange}
-/>
-              <Input label="Aval" value={company?.aval || ''} readOnly />
-              <Input label="Lieu de création" value={company?.lieu || ''} readOnly />
+              label="Adresse du tiré"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+            />
+                          <Input
+              label="Aval"
+              name="aval"
+              value={form.aval}
+              onChange={handleChange}
+            />
+
+            <Input
+              label="Lieu de création"
+              name="lieu"
+              value={form.lieu}
+              onChange={handleChange}
+            />
+
               <Input label="Date de création" value={dateCreation}  type="date" />
               <Input label="Date d'échéance" name="echeance" value={form.echeance} onChange={handleChange} type="date" />
 
@@ -316,8 +336,8 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
   >
     <option value="">-- Choisir un bénéficiaire --</option>
     {customers.map(customer => (
-      <option key={customer.id} value={`${customer.nom} ${customer.prenom}`}>
-        {customer.nom} {customer.prenom}
+      <option key={customer.id} value={`${customer.nom} `}>
+        {customer.nom} 
       </option>
     ))}
   </select>
@@ -347,29 +367,7 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
           </div>
         </div>
 
-        <div id="print-area" className="hidden-print">
-  {/* Mets ici le rendu complet de ton document à imprimer avec le positionnement */}
-  <div style={{ width: '800px', height: '1000px', position: 'relative', background: 'white', color: 'black', fontFamily: 'sans-serif' }}>
-    {/* Exemple simplifié */}
-    <div style={{ position: 'absolute', top: 70, right: 489 }}>{form.echeance}</div>
-    <div style={{ position: 'absolute', top: 70, right: 320 }}>{dateCreation}</div>
-    <div style={{ position: 'absolute', top: 50, right: 320 }}>{company?.lieu}</div>
-
-    <div style={{ position: 'absolute', top: 120, left: 200, letterSpacing: '0.1em' }}>
-      {[form.rib1, form.rib2, form.rib3, form.rib4].join('')}
-    </div>
-
-    <div style={{ position: 'absolute', top: 120, right: 100 }}>{`${form.montant}.${form.millimes} DT`}</div>
-
-    <div style={{ position: 'absolute', top: 185, left: 230, fontWeight: 'bold' }}>{form.beneficiaire}</div>
-
-    <div style={{ position: 'absolute', top: 185, right: 100 }}>{`${form.montant}.${form.millimes} DT`}</div>
-
-    <div style={{ position: 'absolute', top: 225, left: 30, textTransform: 'capitalize' }}>{form.montantLettre}</div>
-
-    {/* Ajoute le reste des champs comme dans ta page print */}
-  </div>
-</div>
+       
 
       </main>
     </div>

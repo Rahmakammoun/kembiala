@@ -4,7 +4,7 @@ import Header from '../components/header'
 import { useState, useEffect } from 'react'
 import { GetServerSideProps } from 'next'
 import { getSession } from 'next-auth/react'
-import { Pencil, Trash2, Printer } from 'lucide-react'
+import { Eye,Pencil, Trash2, Printer } from 'lucide-react'
 import { FaPlus } from 'react-icons/fa'
 
 type Bill = {
@@ -17,6 +17,9 @@ type Bill = {
   bankAgency: string
   customerId: number
   bankId: number
+  companyName: string      
+  aval: string             
+  lieu: string 
 }
 
 
@@ -41,6 +44,8 @@ export default function BillsPage() {
   const [statusFilter, setStatusFilter] = useState('All')
   const [bills, setBills] = useState<Bill[]>([])
   const [billToDelete, setBillToDelete] = useState<Bill | null>(null)
+const [billToView, setBillToView] = useState<Bill | null>(null)
+const closeDetailModal = () => setBillToView(null)
 
   const requestDelete = (bill: Bill) => {
   setBillToDelete(bill)
@@ -79,7 +84,7 @@ export default function BillsPage() {
 
     fetchBills()
   }, [])
-const [clients, setClients] = useState<{ id: number, nom: string, prenom: string }[]>([])
+const [clients, setClients] = useState<{ id: number, nom: string }[]>([])
 const [banks, setBanks] = useState<{ id: number, bankName: string }[]>([])
 
 useEffect(() => {
@@ -108,12 +113,15 @@ useEffect(() => {
 }, [])
 
  const filteredBills = bills.filter((bill) => {
-  const clientName = bill.clientName || ''
+  const clientName = bill.clientName|| ''
   const matchesSearch = clientName.toLowerCase().includes(searchTerm.toLowerCase())
   const matchesStatus = statusFilter === 'All' || bill.status === statusFilter
   return matchesSearch && matchesStatus
 })
 
+const openDetailModal = (bill: Bill) => {
+  setBillToView(bill)
+}
 
   // Ouvre la popup et met la kembiala à modifier
   const openEditModal = (bill: Bill) => {
@@ -304,7 +312,7 @@ const handleSave = async () => {
                 {filteredBills.map((bill) => (
                   <tr key={bill.id} className="hover:bg-gray-50">
                    <td className="border px-2 py-2">{String(bill.id).padStart(12, '0')}</td>
-                    <td className="border px-2 py-2 capitalize">{bill.clientName}</td>
+                    <td className="border px-2 py-2 capitalize">{bill.clientName} </td>
                     <td className="border px-2 py-2">{bill.amount.toLocaleString()}</td>
                     <td className="border px-2 py-2">
                       {(() => {
@@ -334,13 +342,21 @@ const handleSave = async () => {
                     <td className="border px-2 py-2">{bill.bankAgency}</td>
                     <td className="border px-2 py-2">
                       <div className="flex justify-center items-center space-x-2">
-                        <button
+                        {/* <button
                           className="text-blue-600 hover:text-blue-800"
                           title="Edit"
                           onClick={() => openEditModal(bill)}
                         >
                           <Pencil size={16} />
+                        </button> */}
+                        <button
+                          className="text-blue-600 hover:text-blue-800"
+                          title="Voir détails"
+                          onClick={() => openDetailModal(bill)} // nouvelle fonction à créer
+                        >
+                          <Eye size={16} />
                         </button>
+
                        <button
                         className="text-red-600 hover:text-red-800"
                         title="Delete"
@@ -380,7 +396,7 @@ const handleSave = async () => {
   >
     {clients.map((client) => (
       <option key={client.id} value={client.id}>
-        {client.nom} {client.prenom}
+        {client.nom} 
       </option>
     ))}
   </select>
@@ -509,6 +525,7 @@ const handleSave = async () => {
         <span className="font-semibold">{billToDelete.clientName}</span> ?
       </p>
       <div className="flex justify-end space-x-2">
+        
         <button
           onClick={() => setBillToDelete(null)}
           className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
@@ -525,6 +542,47 @@ const handleSave = async () => {
     </div>
   </div>
 )}
+{billToView && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-xl">
+      <h2 className="text-2xl font-semibold mb-6 text-center text-blue-700">
+         Détails de la kembiala #{String(billToView.id).padStart(12, '0')}
+      </h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
+        <div>
+          <p><span className="font-semibold text-gray-800"> Société:</span> {billToView.companyName || 'N/A'}</p>
+          <p><span className="font-semibold text-gray-800"> Aval:</span> {billToView.aval || 'N/A'}</p>
+          <p><span className="font-semibold text-gray-800"> Lieu:</span> {billToView.lieu || 'N/A'}</p>
+          <p><span className="font-semibold text-gray-800"> Client:</span> {billToView.clientName}</p>
+        </div>
+        <div>
+          <p><span className="font-semibold text-gray-800"> Montant:</span> {billToView.amount.toLocaleString()} DT</p>
+          <p><span className="font-semibold text-gray-800">Échéance:</span> {new Date(billToView.dueDate).toLocaleDateString()}</p>
+          <p><span className="font-semibold text-gray-800">Création:</span> {new Date(billToView.creationDate).toLocaleDateString()}</p>
+          <p>
+            <span className="font-semibold text-gray-800"> Statut:</span>{' '}
+            <span className={billToView.status === 'payé' ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+              {billToView.status}
+            </span>
+          </p>
+          <p><span className="font-semibold text-gray-800"> Banque:</span> {billToView.bankAgency}</p>
+        </div>
+      </div>
+
+      <div className="mt-6 text-center">
+        <button
+          onClick={closeDetailModal}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
+        >
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
 
       </main>
     </div>

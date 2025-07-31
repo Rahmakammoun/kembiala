@@ -6,9 +6,9 @@ const prisma = new PrismaClient()
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { nom, prenom, email } = body
+  const { nom,  email } = body
 
-  if (!nom || !prenom || !email) {
+  if (!nom  || !email) {
     return NextResponse.json({ error: 'Tous les champs sont requis' }, { status: 400 })
   }
 
@@ -16,7 +16,6 @@ export async function POST(req: NextRequest) {
     const newCustomer = await prisma.customer.create({
       data: {
         nom,
-        prenom,
         email,
       },
     })

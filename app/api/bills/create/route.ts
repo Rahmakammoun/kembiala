@@ -6,18 +6,19 @@ const prisma = new PrismaClient()
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { amount, millimes, dueDate, customerName, bankName } = body
+    const { amount, millimes, dueDate, customerName,companyName, aval, lieu, bankName } = body
 
     if (!amount || !dueDate || !customerName || !bankName) {
       return NextResponse.json({ message: 'Champs manquants' }, { status: 400 })
     }
 
     // Rechercher le client
-    const [nom, prenom] = customerName.split(' ')
+    const nom = customerName.trim()
+
     const customer = await prisma.customer.findFirst({
       where: {
         nom,
-        prenom
+       
       }
     })
 
@@ -44,6 +45,9 @@ export async function POST(req: NextRequest) {
         amount: totalAmount,
         dueDate: new Date(dueDate),
         status: 'non_payé',
+        companyName,
+        aval,
+        lieu,
         customerId: customer.id,
         bankId: bank.id,
       }

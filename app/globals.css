@@ -50,8 +50,8 @@ body {
     position: absolute;
     left: 0;
     top: 0;
-    width: 800px; /* ou 100% si tu veux toute la largeur */
-    height: 1000px;
+    width: 100% !important;
+    height: 100% !important;
     background: white;
     color: black;
   }
