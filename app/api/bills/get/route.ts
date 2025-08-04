@@ -20,6 +20,7 @@ export async function GET() {
       id: bill.id,
       clientName: `${bill.customer.nom}`,
       amount: bill.amount,
+      numero: bill.numero,
       dueDate: bill.dueDate.toISOString().split('T')[0],
       status: bill.status,
       creationDate: bill.creationDate.toISOString(),

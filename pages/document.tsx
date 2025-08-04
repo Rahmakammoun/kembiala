@@ -26,6 +26,7 @@ type Customer = {
 }
 
 type FormData = {
+  numero: string
   name: string
   aval: string
   lieu: string
@@ -48,6 +49,7 @@ export default function DocumentForm() {
   const [dateCreation] = useState(() => new Date().toISOString().split('T')[0])
 
   const [form, setForm] = useState<FormData>({
+    numero: '',
     name: '',
     echeance: '',
     rib1: '', rib2: '', rib3: '', rib4: '',
@@ -95,6 +97,15 @@ export default function DocumentForm() {
 const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
   const { name, value } = e.target
   const updatedForm = { ...form, [name]: value }
+  if (name === 'numero') {
+    // Empêcher tout sauf chiffres et longueur max 12
+    const numericValue = value.replace(/\D/g, '') // Supprime tout sauf chiffres
+    if (numericValue.length <= 12) {
+      updatedForm.numero = numericValue
+    } else {
+      return // Ne met pas à jour si plus de 12 chiffres
+    }
+  } 
 
   if (name === 'montant' || name === 'millimes') {
     const dinars = parseInt(updatedForm.montant || '0', 10)
@@ -139,6 +150,10 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     alert('Veuillez remplir tous les champs obligatoires.')
     return
   }
+if (form.numero.length !== 12) {
+  alert('Le numéro doit contenir exactement 12 chiffres.')
+  return
+}
 
   try {
     // Sauvegarde
@@ -146,6 +161,7 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        numero: form.numero,
         amount: form.montant,
         millimes: form.millimes,
         dueDate: form.echeance,
@@ -185,6 +201,7 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     
     const ribFull = [form.rib1, form.rib2, form.rib3, form.rib4].join('')
     const query = new URLSearchParams({
+      numero: form.numero,
       companyName: form.name || '',
       lieu: form.lieu || '',
       creationDate: dateCreation,
@@ -220,6 +237,16 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         <div className="flex-1 p-6 overflow-auto">
           <div className="bg-white rounded-lg shadow-md p-6">
             <h1 className="text-2xl font-bold mb-6">Création Document</h1>
+            <Input
+            label="Numéro"
+            name="numero"
+            value={form.numero}
+            onChange={handleChange}
+            maxLength={12}
+            inputMode="numeric"
+            pattern="\d{12}"
+          />
+
 
             <div className="space-y-4">
               <Input

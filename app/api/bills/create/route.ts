@@ -6,9 +6,9 @@ const prisma = new PrismaClient()
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { amount, millimes, dueDate, customerName,companyName, aval, lieu, bankName } = body
+    const { amount, millimes, dueDate, customerName,companyName, aval, lieu, bankName, numero  } = body
 
-    if (!amount || !dueDate || !customerName || !bankName) {
+    if (!amount || !dueDate || !customerName || !bankName|| !numero ||!companyName ||!aval||!aval) {
       return NextResponse.json({ message: 'Champs manquants' }, { status: 400 })
     }
 
@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
     // Créer la facture
     const bill = await prisma.bill.create({
       data: {
+        numero,
         amount: totalAmount,
         dueDate: new Date(dueDate),
         status: 'non_payé',
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
         lieu,
         customerId: customer.id,
         bankId: bank.id,
+        
       }
     })
 
