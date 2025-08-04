@@ -31,6 +31,7 @@ type FormData = {
   aval: string
   lieu: string
   echeance: string
+  creationDate: string
   rib1: string
   rib2: string
   rib3: string
@@ -42,15 +43,16 @@ type FormData = {
 }
 
 export default function DocumentForm() {
-    const [customers, setCustomers] = useState<Customer[]>([])
+  const [customers, setCustomers] = useState<Customer[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [company, setCompany] = useState<Company | null>(null)
   const [selectedBank, setSelectedBank] = useState<Bank | null>(null)
-  const [dateCreation] = useState(() => new Date().toISOString().split('T')[0])
+  const [creationDate] = useState(() => new Date().toISOString().split('T')[0])
 
   const [form, setForm] = useState<FormData>({
     numero: '',
     name: '',
+    creationDate: new Date().toISOString().split('T')[0],
     echeance: '',
     rib1: '', rib2: '', rib3: '', rib4: '',
     montant: '', millimes: '',
@@ -144,6 +146,11 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     alert('Erreur enregistrement facture')
   }
 } */
+function addOneDay(dateStr: string): string {
+  const date = new Date(dateStr)
+  date.setDate(date.getDate() + 1)
+  return date.toISOString().split('T')[0]
+}
 
   const handlePrint = async () => {
   if (!form.echeance || !selectedBank || !form.beneficiaire || !form.montant) {
@@ -204,7 +211,7 @@ if (form.numero.length !== 12) {
       numero: form.numero,
       companyName: form.name || '',
       lieu: form.lieu || '',
-      creationDate: dateCreation,
+      creationDate: form.creationDate,
       dueDate: form.echeance,
       rib: ribFull,
       amount: `${form.montant}.${form.millimes}`,
@@ -268,9 +275,24 @@ if (form.numero.length !== 12) {
               value={form.lieu}
               onChange={handleChange}
             />
+            <Input
+              label="Date de création"
+              name="creationDate"
+              value={form.creationDate}
+              onChange={handleChange}
+              type="date"
+            />
 
-              <Input label="Date de création" value={dateCreation}  type="date" />
-              <Input label="Date d'échéance" name="echeance" value={form.echeance} onChange={handleChange} type="date" />
+              <Input
+            label="Date d'échéance"
+            name="echeance"
+            value={form.echeance}
+            onChange={handleChange}
+            type="date"
+            min={addOneDay(form.creationDate)}
+          />
+
+
 
               <div className="flex items-center mb-3">
                 <label className="w-40 font-medium">Agence bancaire:</label>

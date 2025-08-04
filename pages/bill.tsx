@@ -20,6 +20,7 @@ type Bill = {
   companyName: string      
   aval: string             
   lieu: string 
+  numero:string
 }
 
 
@@ -50,6 +51,35 @@ const closeDetailModal = () => setBillToView(null)
   const requestDelete = (bill: Bill) => {
   setBillToDelete(bill)
 }
+const toggleStatus = async (bill: Bill) => {
+  const newStatus = bill.status === 'payé' ? 'non_payé' : 'payé'
+
+  try {
+    const res = await fetch('/api/bills/update', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...bill, status: newStatus }),
+    })
+
+    const result = await res.json()
+    if (!res.ok) throw new Error(result.error || 'Erreur lors du changement de statut')
+
+    await fetchBills()
+    setPopup({
+      type: 'success',
+      title: 'Mis à jour !',
+      message: `Le statut de la kembiala #${String(bill.id).padStart(12, '0')} a été mis à jour.`,
+    })
+  } catch (err: any) {
+    setPopup({
+      type: 'error',
+      title: 'Erreur !',
+      message: err.message || 'Impossible de changer le statut.',
+    })
+  }
+}
+
+
 
   const [popup, setPopup] = useState<{
     type: 'success' | 'error'
@@ -298,7 +328,7 @@ const handleSave = async () => {
             <table className="min-w-full border border-gray-300 text-sm">
               <thead>
                 <tr className="bg-gray-100 text-left">
-                  <th className="border px-2 py-2">ID</th>
+                  <th className="border px-2 py-2">Numéro</th>
                   <th className="border px-2 py-2">Client Name</th>
                   <th className="border px-2 py-2">Amount (DT)</th>
                   <th className="border px-2 py-2">Due Date</th>
@@ -311,7 +341,7 @@ const handleSave = async () => {
               <tbody>
                 {filteredBills.map((bill) => (
                   <tr key={bill.id} className="hover:bg-gray-50">
-                   <td className="border px-2 py-2">{String(bill.id).padStart(12, '0')}</td>
+                   <td className="border px-2 py-2">{bill.numero}</td>
                     <td className="border px-2 py-2 capitalize">{bill.clientName} </td>
                     <td className="border px-2 py-2">{bill.amount.toLocaleString()}</td>
                     <td className="border px-2 py-2">
@@ -324,11 +354,42 @@ const handleSave = async () => {
                       })()}
                     </td>
 
-                    <td className="border border-black px-2 py-2 font-bold">
-                      <span className={bill.status === 'payé' ? 'text-green-600' : 'text-red-600'}>
-                        {bill.status}
-                      </span>
-                    </td>
+   <td className="border px-2 py-2 text-center">
+  <label className="relative inline-flex items-center cursor-pointer">
+    <input
+      type="checkbox"
+      checked={bill.status === 'payé'}
+      onChange={() => toggleStatus(bill)}
+      className="sr-only peer"
+    />
+    <div
+      className="w-24 h-8 bg-red-500 rounded-full peer-checked:bg-green-500 flex items-center justify-between px-2 text-white text-sm font-medium relative transition-all"
+    >
+      <span
+        className={`absolute left-8 transition-all duration-200 ${
+          bill.status === 'payé' ? 'opacity-0' : 'opacity-100'
+        }`}
+      >
+        Non Payé
+      </span>
+      <span
+        className={`absolute right-8 transition-all duration-200 ${
+          bill.status === 'payé' ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        Payé
+      </span>
+      <div
+        className="absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transform transition-all duration-300 peer-checked:translate-x-16"
+      ></div>
+    </div>
+  </label>
+</td>
+
+
+
+
+
 
                     <td className="border px-2 py-2">
                       {(() => {
@@ -548,12 +609,16 @@ const handleSave = async () => {
       <h2 className="text-2xl font-semibold mb-6 text-center text-blue-700">
          Détails de la kembiala #{String(billToView.id).padStart(12, '0')}
       </h2>
+<div className="flex flex-col justify-center items-center min-h-[200px]">
+      
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-30 gap-y-4 text-gray-700">
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
+        
         <div>
-          <p><span className="font-semibold text-gray-800"> Société:</span> {billToView.companyName || 'N/A'}</p>
-          <p><span className="font-semibold text-gray-800"> Aval:</span> {billToView.aval || 'N/A'}</p>
-          <p><span className="font-semibold text-gray-800"> Lieu:</span> {billToView.lieu || 'N/A'}</p>
+          <p><span className="font-semibold text-gray-800"> Numéro:</span> {billToView.numero}</p>
+          <p><span className="font-semibold text-gray-800"> Société:</span> {billToView.companyName }</p>
+          <p><span className="font-semibold text-gray-800"> Aval:</span> {billToView.aval}</p>
+          <p><span className="font-semibold text-gray-800"> Lieu:</span> {billToView.lieu }</p>
           <p><span className="font-semibold text-gray-800"> Client:</span> {billToView.clientName}</p>
         </div>
         <div>
@@ -569,7 +634,7 @@ const handleSave = async () => {
           <p><span className="font-semibold text-gray-800"> Banque:</span> {billToView.bankAgency}</p>
         </div>
       </div>
-
+</div>
       <div className="mt-6 text-center">
         <button
           onClick={closeDetailModal}
