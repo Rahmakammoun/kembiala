@@ -4,6 +4,7 @@ import { useEffect, useState, ChangeEvent,useRef } from 'react'
 import Header from '../components/header'
 import Sidebar from '../components/sidebar'
 import "../app/globals.css";
+import PrintLayout from '../components/PrintLayout'
 
 type Bank = {
   id: string
@@ -31,6 +32,7 @@ type FormData = {
   aval: string
   lieu: string
   echeance: string
+  creationDate: string
   rib1: string
   rib2: string
   rib3: string
@@ -42,15 +44,16 @@ type FormData = {
 }
 
 export default function DocumentForm() {
-    const [customers, setCustomers] = useState<Customer[]>([])
+  const [customers, setCustomers] = useState<Customer[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [company, setCompany] = useState<Company | null>(null)
   const [selectedBank, setSelectedBank] = useState<Bank | null>(null)
-  const [dateCreation] = useState(() => new Date().toISOString().split('T')[0])
+  const [creationDate] = useState(() => new Date().toISOString().split('T')[0])
 
   const [form, setForm] = useState<FormData>({
     numero: '',
     name: '',
+    creationDate: new Date().toISOString().split('T')[0],
     echeance: '',
     rib1: '', rib2: '', rib3: '', rib4: '',
     montant: '', millimes: '',
@@ -115,37 +118,16 @@ const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 
   setForm(updatedForm)
 }
-/* const handlePrint = async () => {
-  if (!form.echeance || !selectedBank || !form.beneficiaire || !form.montant) {
-    alert('Veuillez remplir tous les champs obligatoires.')
-    return
-  }
 
-  try {
-    const response = await fetch('/api/bills/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        amount: form.montant,
-        millimes: form.millimes,
-        dueDate: form.echeance,
-        customerName: form.beneficiaire,
-        bankName: selectedBank.bankName,
-      }),
-    })
+function addOneDay(dateStr: string): string {
+  const date = new Date(dateStr)
+  date.setDate(date.getDate() + 1)
+  return date.toISOString().split('T')[0]
+}
 
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.message || 'Erreur API')
+const printRef = useRef<HTMLDivElement>(null)
 
-    alert('kembiala enregistrée avec succès !')
-   
-  } catch (err) {
-    console.error('Erreur enregistrement kembiala:', err)
-    alert('Erreur enregistrement facture')
-  }
-} */
-
-  const handlePrint = async () => {
+const handlePrint = async () => {
   if (!form.echeance || !selectedBank || !form.beneficiaire || !form.montant) {
     alert('Veuillez remplir tous les champs obligatoires.')
     return
@@ -189,6 +171,7 @@ if (form.numero.length !== 12) {
 
 
 
+
  const handlePrintPreview = async () => {
   if (!form.echeance || !selectedBank || !form.beneficiaire || !form.montant) {
     alert('Veuillez remplir tous les champs obligatoires.')
@@ -204,7 +187,7 @@ if (form.numero.length !== 12) {
       numero: form.numero,
       companyName: form.name || '',
       lieu: form.lieu || '',
-      creationDate: dateCreation,
+      creationDate: form.creationDate,
       dueDate: form.echeance,
       rib: ribFull,
       amount: `${form.montant}.${form.millimes}`,
@@ -268,9 +251,24 @@ if (form.numero.length !== 12) {
               value={form.lieu}
               onChange={handleChange}
             />
+            <Input
+              label="Date de création"
+              name="creationDate"
+              value={form.creationDate}
+              onChange={handleChange}
+              type="date"
+            />
 
-              <Input label="Date de création" value={dateCreation}  type="date" />
-              <Input label="Date d'échéance" name="echeance" value={form.echeance} onChange={handleChange} type="date" />
+              <Input
+            label="Date d'échéance"
+            name="echeance"
+            value={form.echeance}
+            onChange={handleChange}
+            type="date"
+            min={addOneDay(form.creationDate)}
+          />
+
+
 
               <div className="flex items-center mb-3">
                 <label className="w-40 font-medium">Agence bancaire:</label>
@@ -394,12 +392,51 @@ if (form.numero.length !== 12) {
           </div>
         </div>
 
-       
+      
 
+ 
       </main>
+      <div
+  id="print-area"
+  className="hidden print:block absolute top-0 left-0 w-full h-full bg-white text-black font-sans"
+>
+  {/* Mets ici le rendu complet de ton document à imprimer avec le positionnement */}
+  <div style={{ width: '800px', height: '1000px', position: 'relative', background: 'white', color: 'black', fontFamily: 'sans-serif' }}>
+    {/* Exemple simplifié */}
+    <div style={{ position: 'absolute', top: 70, right: 489 }}>{form.echeance}</div>
+    <div style={{ position: 'absolute', top: 70, right: 320 }}>{creationDate}</div>
+    <div style={{ position: 'absolute', top: 50, right: 320 }}>{form.lieu}</div>
+
+    <div style={{ position: 'absolute', top: 120, left: 200, letterSpacing: '0.1em' }}>
+      {[form.rib1, form.rib2, form.rib3, form.rib4].join('')}
+    </div>
+
+    <div style={{ position: 'absolute', top: 120, right: 100 }}>{`${form.montant}.${form.millimes} DT`}</div>
+
+    <div style={{ position: 'absolute', top: 185, left: 230, fontWeight: 'bold' }}>{form.beneficiaire}</div>
+
+    <div style={{ position: 'absolute', top: 185, right: 100 }}>{`${form.montant}.${form.millimes} DT`}</div>
+
+    <div style={{ position: 'absolute', top: 225, left: 30, textTransform: 'capitalize' }}>{form.montantLettre}</div>
+
+      <div className="absolute top-[267px] left-[30px]">{form.lieu}</div>
+      <div className="absolute top-[267px] left-[155px]">{creationDate}</div>
+      <div className="absolute top-[267px] left-[275px]">{form.echeance}</div>
+      <div className="absolute top-[310px] left-[20px] letterSpacing- '0.1em'">{[form.rib1, form.rib2, form.rib3, form.rib4].join('')}</div>
+      <div className="absolute top-[310px] left-[530px]">{selectedBank?.bankName}</div>
+      <div className="absolute top-[373px] left-[183px]">{form.aval}</div>
+
+      <div className="absolute top-[330px] left-[350px] w-[150px] break-words whitespace-pre-wrap">
+  {form.name}</div>
+  </div>
+</div>
+
     </div>
     
+
+    
   )
+  
 }
 
 function Input({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
@@ -506,6 +543,3 @@ function convertirMontantEnLettres(dinars: number, millimes: number): string {
 
   return 'Zéro dinar'
 }
-
-
-
