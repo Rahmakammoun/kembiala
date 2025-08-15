@@ -403,30 +403,51 @@ if (form.numero.length !== 12) {
   {/* Mets ici le rendu complet de ton document à imprimer avec le positionnement */}
   <div style={{ width: '800px', height: '1000px', position: 'relative', background: 'white', color: 'black', fontFamily: 'sans-serif' }}>
     {/* Exemple simplifié */}
-    <div style={{ position: 'absolute', top: 70, right: 489 }}>{form.echeance}</div>
-    <div style={{ position: 'absolute', top: 70, right: 320 }}>{creationDate}</div>
-    <div style={{ position: 'absolute', top: 50, right: 320 }}>{form.lieu}</div>
+    {/* <div style={{ position: 'absolute', top: 53, right: 520 }}>{form.echeance}</div>
+    <div style={{ position: 'absolute', top: 53, right: 390 }}>{creationDate}</div>
+    <div style={{ position: 'absolute', top: 33, right: 390 }}>{form.lieu}</div> */}
 
-    <div style={{ position: 'absolute', top: 120, left: 200, letterSpacing: '0.1em' }}>
-      {[form.rib1, form.rib2, form.rib3, form.rib4].join('')}
-    </div>
+    <div style={{ position: 'absolute', top: 57, right: 520 }}>{form.echeance}</div>
+    <div style={{ position: 'absolute', top: 61, right: 390 }}>{creationDate}</div>
+    <div style={{ position: 'absolute', top: 41, right: 390 }}>{form.lieu}</div>
 
-    <div style={{ position: 'absolute', top: 120, right: 100 }}>{`${form.montant}.${form.millimes} DT`}</div>
+ {/*    <div style={{ position: 'absolute', top: 91, left: 185, letterSpacing: '0.1em' }}>
+  {`${form.rib1} `}&nbsp;&nbsp;{`${form.rib2}`}&nbsp;&nbsp;{`${form.rib3} `}&nbsp;{ ` ${form.rib4}`}
+</div> */}
 
-    <div style={{ position: 'absolute', top: 185, left: 230, fontWeight: 'bold' }}>{form.beneficiaire}</div>
+<div style={{ position: 'absolute', top: 90, left: 185 }}>
+  <span style={{ position: 'absolute', left: 0 }}>{form.rib1}</span>
+  <span style={{ position: 'absolute', left: 40 }}>{form.rib2}</span>
+  <span style={{ position: 'absolute', left: 95 }}>{form.rib3}</span>
+  <span style={{ position: 'absolute', left: 242 }}>{form.rib4}</span>
+</div>
 
-    <div style={{ position: 'absolute', top: 185, right: 100 }}>{`${form.montant}.${form.millimes} DT`}</div>
 
-    <div style={{ position: 'absolute', top: 225, left: 30, textTransform: 'capitalize' }}>{form.montantLettre}</div>
 
-      <div className="absolute top-[267px] left-[30px]">{form.lieu}</div>
-      <div className="absolute top-[267px] left-[155px]">{creationDate}</div>
-      <div className="absolute top-[267px] left-[275px]">{form.echeance}</div>
-      <div className="absolute top-[310px] left-[20px] letterSpacing- '0.1em'">{[form.rib1, form.rib2, form.rib3, form.rib4].join('')}</div>
-      <div className="absolute top-[310px] left-[530px]">{selectedBank?.bankName}</div>
-      <div className="absolute top-[373px] left-[183px]">{form.aval}</div>
 
-      <div className="absolute top-[330px] left-[350px] w-[150px] break-words whitespace-pre-wrap">
+
+    <div style={{ position: 'absolute', top: 90, right: 220 }}>{`${form.montant}.${form.millimes} DT`}</div>
+
+    <div style={{ position: 'absolute', top: 150, left: 183 }}>{form.beneficiaire}</div>
+
+    <div style={{ position: 'absolute', top: 145, right: 220 }}>{`${form.montant}.${form.millimes} DT`}</div>
+
+    <div style={{ position: 'absolute', top: 178, left: 20, textTransform: 'capitalize' }}>{form.montantLettre}</div>
+
+      <div className="absolute top-[210px] left-[22px]">{form.lieu}</div>
+      <div className="absolute top-[210px] left-[114px]">{creationDate}</div>
+      <div className="absolute top-[210px] left-[210px]">{form.echeance}</div>
+      <div className="absolute top-[250px] left-[11px] ">
+        <span style={{ position: 'absolute', left: 2 }}>{form.rib1}</span>
+        <span style={{ position: 'absolute', left: 28 }}>{form.rib2}</span>
+        <span style={{ position: 'absolute', left: 95 }}>{form.rib3}</span>
+        <span style={{ position: 'absolute', left: 237 }}>{form.rib4}</span>
+      </div>
+
+
+      <div className="absolute top-[300px] left-[144px] w-[150px]">{form.aval}</div>
+
+      <div className="absolute top-[272px] left-[285px] w-[150px] break-words whitespace-pre-wrap">
   {form.name}</div>
   </div>
 </div>

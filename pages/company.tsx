@@ -21,6 +21,9 @@ type Bank = {
   rib: string
 }
 
+
+
+
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession(context)
   if (!session) {
@@ -55,6 +58,7 @@ export default function CompanyInfoPage() {
   title: string
   message: string
   } | null>(null)
+
 
   useEffect(() => {
     if (popup) {
@@ -191,7 +195,11 @@ const handleSaveCompany = async () => {
 }
 
 
-
+function formatRIB(rib: string): string {
+  const cleanRib = rib.replace(/\s+/g, '') // supprime les espaces éventuels
+  if (cleanRib.length !== 20) return rib // ou affiche un message d'erreur si besoin
+  return `${cleanRib.slice(0, 2)} - ${cleanRib.slice(2, 5)} - ${cleanRib.slice(5, 18)} - ${cleanRib.slice(18, 20)}`
+}
 
   return (
      <div className="flex min-h-screen bg-blue-50 text-gray-900">
@@ -375,6 +383,7 @@ const handleSaveCompany = async () => {
                   <th className="px-4 py-2 text-left">Actions</th>
                 </tr>
               </thead>
+              
               <tbody>
                 {banks
                   .filter(
@@ -385,7 +394,8 @@ const handleSaveCompany = async () => {
                   .map((bank) => (
                     <tr key={bank.id} className="hover:bg-gray-100">
                       <td className="border px-4 py-2">{bank.bankName}</td>
-                      <td className="border px-4 py-2">{bank.rib}</td>
+                      <td className="border px-4 py-2">{formatRIB(bank.rib)}</td>
+
                       <td className="border px-4 py-2">
                         <button
                             onClick={() => {
