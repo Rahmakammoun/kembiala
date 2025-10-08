@@ -22,7 +22,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
   return (
     <>
-      {/* Burger button - only show when sidebar is closed on small screens */}
+    
       {!isOpen && (
         <button
           className="md:hidden fixed top-4 left-4 z-50 bg-blue-800 text-white p-2 rounded"
@@ -32,7 +32,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         </button>
       )}
 
-      {/* Sidebar */}
+     
       <aside
         className={clsx(
           'bg-blue-900 text-white flex flex-col p-4 fixed top-0 left-0 h-screen w-64 z-40 transition-transform duration-300',
@@ -40,7 +40,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
           'md:translate-x-0'
         )}
       >
-        {/* Header section with title and close button (only on mobile) */}
+      
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">Kembiala</h2>
           <button onClick={() => setIsOpen(false)} className="md:hidden text-white">
@@ -50,10 +50,10 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
         <nav className="space-y-2">
           <button
-            onClick={() => handleNavigation('/dashboard')}
+            onClick={() => handleNavigation('/user')}
             className={clsx(
               'flex items-center gap-2 px-3 py-2 rounded w-full',
-              isActive('/dashboard') ? 'bg-blue-600' : 'hover:bg-blue-800'
+              isActive('/user') ? 'bg-blue-600' : 'hover:bg-blue-800'
             )}
           >
             <FaPlus /> Utilisateurs

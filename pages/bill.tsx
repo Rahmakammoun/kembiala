@@ -6,6 +6,14 @@ import { GetServerSideProps } from 'next'
 import { getSession } from 'next-auth/react'
 import { Eye,Pencil, Trash2, Printer } from 'lucide-react'
 import { FaPlus } from 'react-icons/fa'
+import { useRouter } from 'next/router'
+import { useRef } from 'react'
+
+type Bank = {
+  id: number
+  bankName: string
+  rib: string
+}
 
 type Bill = {
   id: number
@@ -21,6 +29,7 @@ type Bill = {
   aval: string             
   lieu: string 
   numero:string
+  bank?: Bank 
 }
 
 
@@ -40,15 +49,74 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 }
 
 export default function BillsPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('All')
-  const [bills, setBills] = useState<Bill[]>([])
-  const [billToDelete, setBillToDelete] = useState<Bill | null>(null)
+const [sidebarOpen, setSidebarOpen] = useState(false)
+const [searchTerm, setSearchTerm] = useState('')
+const [statusFilter, setStatusFilter] = useState('All')
+const [bills, setBills] = useState<Bill[]>([])
+const [billToDelete, setBillToDelete] = useState<Bill | null>(null)
 const [billToView, setBillToView] = useState<Bill | null>(null)
 const closeDetailModal = () => setBillToView(null)
+const router = useRouter()
+const [billToPrint, setBillToPrint] = useState<Bill | null>(null);
 
-  const requestDelete = (bill: Bill) => {
+const ones: string[] = [
+  '', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf',
+  'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize'
+];
+
+const tens: string[] = [
+  '', '', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante', 'quatre-vingt', 'quatre-vingt'
+];
+
+function numberToWords(n: number): string {
+  if (n === 0) return 'zéro';
+  if (n < 0) return 'moins ' + numberToWords(-n);
+
+  let words = '';
+
+  if (Math.floor(n / 1000) > 0) {
+    words += numberToWords(Math.floor(n / 1000)) + ' mille ';
+    n %= 1000;
+  }
+
+  if (Math.floor(n / 100) > 0) {
+    words += (Math.floor(n / 100) > 1 ? ones[Math.floor(n / 100)] : '') + ' cent ';
+    n %= 100;
+  }
+
+  if (n > 0) {
+    if (n < 17) {
+      words += ones[n];
+    } else if (n < 20) {
+      words += 'dix-' + ones[n - 10];
+    } else if (n < 70) {
+      words += tens[Math.floor(n / 10)];
+      if (n % 10 === 1) words += '-et-un';
+      else if (n % 10 > 0) words += '-' + ones[n % 10];
+    } else if (n < 80) {
+      words += 'soixante-' + numberToWords(n - 60);
+    } else if (n < 100) {
+      words += 'quatre-vingt';
+      if (n % 20 > 0) words += '-' + numberToWords(n % 20);
+    }
+  }
+
+  return words.trim();
+}
+
+function amountToWords(amount: number): string {
+  const dt = Math.floor(amount);
+  const millimes = Math.round((amount - dt) * 1000); 
+  let result = numberToWords(dt) + ' dinars';
+  if (millimes > 0) {
+    result += ' et ' + numberToWords(millimes) + ' millimes';
+  }
+  return result;
+}
+
+
+
+const requestDelete = (bill: Bill) => {
   setBillToDelete(bill)
 }
 const toggleStatus = async (bill: Bill) => {
@@ -68,7 +136,7 @@ const toggleStatus = async (bill: Bill) => {
     setPopup({
       type: 'success',
       title: 'Mis à jour !',
-      message: `Le statut de la kembiala #${String(bill.id).padStart(12, '0')} a été mis à jour.`,
+      message: `Le statut de la kembiala #${String(bill.numero).padStart(12, '0')} a été mis à jour.`,
     })
   } catch (err: any) {
     setPopup({
@@ -81,7 +149,7 @@ const toggleStatus = async (bill: Bill) => {
 
 
 
-  const [popup, setPopup] = useState<{
+const [popup, setPopup] = useState<{
     type: 'success' | 'error'
     title: string
     message: string
@@ -97,10 +165,18 @@ const toggleStatus = async (bill: Bill) => {
     }
   }, [popup])
 
-  // Pour gérer la popup édition
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [billToEdit, setBillToEdit] = useState<Bill | null>(null)
- const fetchBills = async () => {
+
+const handlePrintBill = (bill: Bill) => {
+  setBillToPrint(bill);
+
+  // On attend que le DOM mette à jour le contenu caché avant d’imprimer
+  setTimeout(() => {
+    window.print();
+  }, 500);
+};
+
+
+const fetchBills = async () => {
       try {
         const res = await fetch('/api/bills/get')
         const data = await res.json()
@@ -126,14 +202,14 @@ useEffect(() => {
         fetch('/api/bank/list'),
       ])
 
-      const billData = await billRes.json()
-      const clientData = await clientRes.json()
+  const billData = await billRes.json()
+  const clientData = await clientRes.json()
       
-      const bankData = await bankRes.json()
+  const bankData = await bankRes.json()
 
-      setBills(billData)
-      setClients(clientData.customers || []) 
-      setBanks(bankData.banks || [])
+  setBills(billData)
+  setClients(clientData.customers || []) 
+  setBanks(bankData.banks || [])
     } catch (error) {
       console.error('Erreur de chargement initial :', error)
     }
@@ -142,68 +218,28 @@ useEffect(() => {
   fetchInitialData()
 }, [])
 
- const filteredBills = bills.filter((bill) => {
-  const clientName = bill.clientName|| ''
-  const matchesSearch = clientName.toLowerCase().includes(searchTerm.toLowerCase())
+const filteredBills = bills.filter((bill) => {  
+  const clientName = bill.clientName || ''
+  const billNumber = bill.numero ? bill.numero.toString() : '' 
+
+  const search = searchTerm.trim().toLowerCase()
+
+  
+  const matchesSearch =
+    clientName.toLowerCase().includes(search) ||
+    billNumber.toLowerCase().startsWith(search) 
+
+ 
   const matchesStatus = statusFilter === 'All' || bill.status === statusFilter
+
   return matchesSearch && matchesStatus
 })
+
 
 const openDetailModal = (bill: Bill) => {
   setBillToView(bill)
 }
 
-  // Ouvre la popup et met la kembiala à modifier
-  const openEditModal = (bill: Bill) => {
-    setBillToEdit(bill)
-    setIsEditModalOpen(true)
-  }
-
-  // Ferme la popup et vide la kembiala à modifier
-  const closeEditModal = () => {
-    setIsEditModalOpen(false)
-    setBillToEdit(null)
-  }
-
-  // Gérer la modification des champs dans la popup
-  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-  if (!billToEdit) return
-  const { name, value } = e.target
-
-  setBillToEdit({
-    ...billToEdit,
-    [name]: name === 'customerId' || name === 'bankId' ? Number(value) : value,
-  })
-}
-
-const handleDelete = async (id: number) => {
-  if (!window.confirm(`Voulez-vous vraiment supprimer la kembiala #${id} ?`)) return
-
-  try {
-    const res = await fetch(`/api/bills/delete?id=${id}`, {
-      method: 'DELETE',
-    })
-
-    const result = await res.json()
-    if (!res.ok) throw new Error(result.error || 'Erreur lors de la suppression')
-
-    await fetchBills()
-
-    setPopup({
-      type: 'success',
-      title: 'Supprimée!',
-      message: `La kembiala #${String(id).padStart(12, '0')} a été supprimée avec succès.`,
-
-    })
-  } catch (err: any) {
-    console.error(err)
-    setPopup({
-      type: 'error',
-      title: 'Erreur!',
-      message: err.message || 'Échec de la suppression.',
-    })
-  }
-}
 const confirmDelete = async () => {
   if (!billToDelete) return
 
@@ -219,7 +255,7 @@ const confirmDelete = async () => {
     setPopup({
       type: 'success',
       title: 'Supprimée!',
-      message: `La kembiala #${String(billToDelete.id).padStart(12, '0')} a été supprimée avec succès.`,
+      message: `La kembiala #${String(billToDelete.numero).padStart(12, '0')} a été supprimée avec succès.`,
 
     })
     setBillToDelete(null)
@@ -233,55 +269,14 @@ const confirmDelete = async () => {
   }
 }
 
-  // Exemple simple pour sauvegarder la modification (tu peux appeler ton API ici)
-const handleSave = async () => {
-  if (!billToEdit) return
-
-  const payload = {
-    id: billToEdit.id,
-    amount: Number(billToEdit.amount),
-    dueDate: billToEdit.dueDate,
-    creationDate: billToEdit.creationDate,
-    status: billToEdit.status,
-    customerId: Number(billToEdit.customerId),
-    bankId: Number(billToEdit.bankId),
-  }
-
-  try {
-    const res = await fetch(`/api/bills/update`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-
-    const result = await res.json()
-    if (!res.ok) throw new Error(result.error || 'Échec de la mise à jour')
-
-    await fetchBills()
-    closeEditModal()
-
-    setPopup({
-      type: 'success',
-      title: 'Succès!',
-      message: 'La kembiala a été modifiée avec succès.',
-    })
-  } catch (err: any) {
-    console.error(err)
-    setPopup({
-      type: 'error',
-      title: 'Erreur!',
-      message: err.message || 'Une erreur est survenue.',
-    })
-  }
-}
 
 
 
 
   
 
-  return (
-    <div className="flex min-h-screen bg-blue-50 text-gray-900">
+return (
+  <div className="flex min-h-screen bg-blue-50 text-gray-900">
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       <main
@@ -297,9 +292,11 @@ const handleSave = async () => {
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-2xl font-bold mb-4">Gestion des lettres de Change</h1>
 
-              <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              <button 
+              onClick={() => router.push('/document')}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                 <FaPlus className="inline mr-1" />
-                Add Bill
+                Ajouter Kembiala
               </button>
             </div>
 
@@ -308,7 +305,7 @@ const handleSave = async () => {
               <div className="flex space-x-2">
                 <input
                   type="text"
-                  placeholder="🔍Search..."
+                  placeholder="🔍Rechercher client..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="border p-2 rounded"
@@ -329,17 +326,18 @@ const handleSave = async () => {
               <thead>
                 <tr className="bg-gray-100 text-left">
                   <th className="border px-2 py-2">Numéro</th>
-                  <th className="border px-2 py-2">Client Name</th>
-                  <th className="border px-2 py-2">Amount (DT)</th>
-                  <th className="border px-2 py-2">Due Date</th>
+                  <th className="border px-2 py-2">Nom client</th>
+                  <th className="border px-2 py-2">Montant (DT)</th>
+                  <th className="border px-2 py-2">Date d'échéance</th>
                   <th className="border px-2 py-2">Status</th>
-                  <th className="border px-2 py-2">Creation Date</th>
-                  <th className="border px-2 py-2">BankAgency</th>
+                  <th className="border px-2 py-2">Date de creation </th>
+                  <th className="border px-2 py-2">Agence bancaire</th>
                   <th className="border px-2 py-2">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredBills.map((bill) => (
+                  
                   <tr key={bill.id} className="hover:bg-gray-50">
                    <td className="border px-2 py-2">{bill.numero}</td>
                     <td className="border px-2 py-2 capitalize">{bill.clientName} </td>
@@ -354,37 +352,37 @@ const handleSave = async () => {
                       })()}
                     </td>
 
-   <td className="border px-2 py-2 text-center">
-  <label className="relative inline-flex items-center cursor-pointer">
-    <input
-      type="checkbox"
-      checked={bill.status === 'payé'}
-      onChange={() => toggleStatus(bill)}
-      className="sr-only peer"
-    />
-    <div
-      className="w-24 h-8 bg-red-500 rounded-full peer-checked:bg-green-500 flex items-center justify-between px-2 text-white text-sm font-medium relative transition-all"
-    >
-      <span
-        className={`absolute left-8 transition-all duration-200 ${
-          bill.status === 'payé' ? 'opacity-0' : 'opacity-100'
-        }`}
-      >
-        Non Payé
-      </span>
-      <span
-        className={`absolute right-8 transition-all duration-200 ${
-          bill.status === 'payé' ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        Payé
-      </span>
-      <div
-        className="absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transform transition-all duration-300 peer-checked:translate-x-16"
-      ></div>
-    </div>
-  </label>
-</td>
+      <td className="border px-2 py-2 text-center">
+                <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                    type="checkbox"
+                    checked={bill.status === 'payé'}
+                    onChange={() => toggleStatus(bill)}
+                    className="sr-only peer"
+                  />
+                <div
+                  className="w-24 h-8 bg-red-500 rounded-full peer-checked:bg-green-500 flex items-center justify-between px-2 text-white text-sm font-medium relative transition-all"
+                >
+                  <span
+                    className={`absolute left-8 transition-all duration-200 ${
+                      bill.status === 'payé' ? 'opacity-0' : 'opacity-100'
+                    }`}
+                  >
+                    Non Payé
+                  </span>
+                  <span
+                    className={`absolute right-8 transition-all duration-200 ${
+                      bill.status === 'payé' ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  >
+                    Payé
+                  </span>
+                  <div
+                    className="absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transform transition-all duration-300 peer-checked:translate-x-16"
+                  ></div>
+                </div>
+              </label>
+      </td>
 
 
 
@@ -403,17 +401,11 @@ const handleSave = async () => {
                     <td className="border px-2 py-2">{bill.bankAgency}</td>
                     <td className="border px-2 py-2">
                       <div className="flex justify-center items-center space-x-2">
-                        {/* <button
-                          className="text-blue-600 hover:text-blue-800"
-                          title="Edit"
-                          onClick={() => openEditModal(bill)}
-                        >
-                          <Pencil size={16} />
-                        </button> */}
+                       
                         <button
                           className="text-blue-600 hover:text-blue-800"
                           title="Voir détails"
-                          onClick={() => openDetailModal(bill)} // nouvelle fonction à créer
+                          onClick={() => openDetailModal(bill)} 
                         >
                           <Eye size={16} />
                         </button>
@@ -427,124 +419,27 @@ const handleSave = async () => {
                       </button>
 
 
-                        <button className="text-gray-600 hover:text-gray-800" title="Print">
+                        <button 
+                        onClick={() => handlePrintBill(bill)}
+                        className="text-gray-600 hover:text-gray-800" title="Print" >
                           <Printer size={16} />
+                          
                         </button>
+           
                       </div>
                     </td>
                   </tr>
+                  
+
+                  
                 ))}
+                
               </tbody>
             </table>
 
-            {/* Modal d'édition */}
-            {isEditModalOpen && billToEdit && (
-              <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30 z-50">
-
-                <div className="bg-white rounded-lg p-6 w-full max-w-md">
-                 <h2 className="text-xl font-bold mb-4">
-                    Modifier la kembiala #{String(billToEdit.id).padStart(12, '0')}
-                  </h2>
-
-
-                  <label className="block mb-2">
-  Client:
-  <select
-    name="customerId"
-    value={billToEdit.customerId}
-    onChange={handleEditChange}
-    className="border w-full p-2 rounded mt-1"
-  >
-    {clients.map((client) => (
-      <option key={client.id} value={client.id}>
-        {client.nom} 
-      </option>
-    ))}
-  </select>
-</label>
-
-
-                  <label className="block mb-2">
-                    Amount:
-                    <input
-                      type="number"
-                      name="amount"
-                      value={billToEdit.amount}
-                      onChange={handleEditChange}
-                      className="border w-full p-2 rounded mt-1"
-                    />
-                  </label>
-
-                  <label className="block mb-2">
-                    Due Date:
-                    <input
-                      type="date"
-                      name="dueDate"
-                      value={billToEdit.dueDate.split('T')[0]} // ISO date format expected
-                      onChange={handleEditChange}
-                      className="border w-full p-2 rounded mt-1"
-                    />
-                  </label>
-<label className="block mb-2">
-  Creation Date:
-  <input
-    type="date"
-    name="creationDate"
-    value={billToEdit.creationDate.split('T')[0]}
-    onChange={handleEditChange}
-    className="border w-full p-2 rounded mt-1"
-  />
-</label>
-
-                  <label className="block mb-2">
-                    Status:
-                    <select
-                      name="status"
-                      value={billToEdit.status}
-                      onChange={handleEditChange}
-                      className="border w-full p-2 rounded mt-1"
-                    >
-                      <option value="payé">Payé</option>
-                      <option value="non_payé">Non Payé</option>
-                    </select>
-                  </label>
-
-                  <label className="block mb-2">
-  Bank Agency:
-  <select
-    name="bankId"
-    value={billToEdit.bankId}
-    onChange={handleEditChange}
-    className="border w-full p-2 rounded mt-1"
-  >
-    {banks.map((bank) => (
-      <option key={bank.id} value={bank.id}>
-        {bank.bankName}
-      </option>
-    ))}
-  </select>
-</label>
-
-
-                  <div className="flex justify-end space-x-4 mt-4">
-                    <button
-                      onClick={closeEditModal}
-                      className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                    >
-                      Annuler
-                    </button>
-                    <button
-                      onClick={handleSave}
-                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                      Enregistrer
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+           
         </div>
+  </div>
         {popup && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
     <div className="bg-white rounded-xl p-6 w-80 text-center shadow-xl">
@@ -582,7 +477,7 @@ const handleSave = async () => {
     >
       <h2 className="text-lg font-bold mb-4 text-red-600">Confirmer la suppression</h2>
       <p className="mb-4">
-        Êtes-vous sûr de vouloir supprimer la kembiala #{String(billToDelete.id).padStart(12, '0')} pour{' '}
+        Êtes-vous sûr de vouloir supprimer la kembiala #{String(billToDelete.numero).padStart(12, '0')} pour{' '}
         <span className="font-semibold">{billToDelete.clientName}</span> ?
       </p>
       <div className="flex justify-end space-x-2">
@@ -607,7 +502,7 @@ const handleSave = async () => {
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
     <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-xl">
       <h2 className="text-2xl font-semibold mb-6 text-center text-blue-700">
-         Détails de la kembiala #{String(billToView.id).padStart(12, '0')}
+         Détails de la kembiala #{String(billToView.numero).padStart(12, '0')}
       </h2>
 <div className="flex flex-col justify-center items-center min-h-[200px]">
       
@@ -647,9 +542,126 @@ const handleSave = async () => {
   </div>
 )}
 
+<div
+  id="print-area"
+  className="hidden print:block absolute top-0 left-0 w-full h-full bg-white text-black font-sans"
+>
+  {billToPrint && (
+    <div
+      style={{
+        width: '800px',
+        height: '1000px',
+        position: 'relative',
+        background: 'white',
+        color: 'black',
+        fontFamily: 'sans-serif',
+      }}
+    >
+      
+      <div style={{ position: 'absolute', top: '57px', right: '520px' }}>
+  {new Date(billToPrint.dueDate).toISOString().split('T')[0]}
+</div>
 
+<div style={{ position: 'absolute', top: '61px', right: '390px' }}>
+  {new Date(billToPrint.creationDate).toISOString().split('T')[0]}
+</div>
+      <div style={{ position: 'absolute', top: '41px', right: '390px' }}>
+        {billToPrint.lieu}
+      </div>
+
+     
+       <div style={{ position: 'absolute', top: '90px', left: '185px', display: 'flex', gap: '40px' }}>
+        
+      <span style={{ position: 'absolute', left: 0 }}>{billToPrint.bank?.rib?.slice(0, 2)}</span>
+      <span style={{ position: 'absolute', left: 40 }}>{billToPrint.bank?.rib?.slice(2, 5)}</span>
+      <span style={{ position: 'absolute', left: 95 }}>{billToPrint.bank?.rib?.slice(5, 18)}</span>
+      <span style={{ position: 'absolute', left: 242 }}>{billToPrint.bank?.rib?.slice(18, 20)}</span>
+    </div>
+      <div style={{ position: 'absolute', top: '90px', right: '220px' }}>
+        {billToPrint.amount.toFixed(3)} DT
+      </div>
+      <div style={{ position: 'absolute', top: '150px', left: '183px' }}>
+        {billToPrint.clientName}
+      </div>
+      <div style={{ position: 'absolute', top: '145px', right: '220px' }}>
+        {billToPrint.amount.toFixed(3)} DT
+      </div>
+
+      <div style={{ position: 'absolute', top: '178px', left: '20px' }}>
+      {amountToWords(billToPrint.amount)} 
+</div>
+      
+
+      <div style={{ position: 'absolute', top: '210px', left: '22px' }}>
+        {billToPrint.lieu}
+      </div>
+      <div style={{ position: 'absolute', top: '210px', left: '114px' }}>
+          {new Date(billToPrint.creationDate).toISOString().split('T')[0]}
+    </div>
+
+    <div style={{ position: 'absolute', top: '210px', left: '210px' }}>
+      {new Date(billToPrint.dueDate).toISOString().split('T')[0]}
+    </div>
+
+ <div style={{ position: 'absolute', top: '250px', left: '11px', display: 'flex', gap: '40px' }}>
+        
+      <span style={{ position: 'absolute', left: 3 }}>{billToPrint.bank?.rib?.slice(0, 2)}</span>
+      <span style={{ position: 'absolute', left: 28 }}>{billToPrint.bank?.rib?.slice(2, 5)}</span>
+      <span style={{ position: 'absolute', left: 95 }}>{billToPrint.bank?.rib?.slice(5, 18)}</span>
+      <span style={{ position: 'absolute', left: 238 }}>{billToPrint.bank?.rib?.slice(18, 20)}</span>
+    </div>
+
+
+
+
+      <div style={{ position: 'absolute', top: '300px', left: '145px',width:'150px' }}>
+        {billToPrint.aval}
+      </div>
+      <div style={{ position: 'absolute', top: '250px', right: '180px' ,width:'170px'}}>
+        {billToPrint.bankAgency}
+      </div>
+      <div style={{ position: 'absolute', top: '272px', left: '285px',width:'150px' }}>
+        {billToPrint.companyName}
+      </div>
+    </div>
+  )}
+
+
+</div>
+<style jsx global>{`
+  @media print {
+    body * {
+      visibility: hidden; 
+    }
+
+    #print-area, #print-area * {
+      visibility: visible;
+    }
+
+    #print-area {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    @page {
+      size: A4; 
+      margin: 0; 
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: white;
+    }
+  }
+`}</style>
 
       </main>
+      
     </div>
   )
 }

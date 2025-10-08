@@ -6,8 +6,8 @@ import { getToken } from 'next-auth/jwt'
 const prisma = new PrismaClient()
 
 export async function DELETE(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET,cookieName: 'next-auth.session-token', }) // ⬅️ récupère le token depuis le header Authorization
-    console.log("🎯 TOKEN :", token)
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET,cookieName: 'next-auth.session-token', }) 
+    console.log(" TOKEN :", token)
   if (!token || token.role !== 'admin') {
     return NextResponse.json({ error: 'Non autorisé (pas de token ou mauvais rôle)' }, { status: 401 })
   }

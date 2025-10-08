@@ -28,7 +28,7 @@ export async function PUT(req: NextRequest) {
       data: {
   amount,
   dueDate: new Date(dueDate),
-  creationDate: new Date(creationDate), // 👈 Ajout ici
+  creationDate: new Date(creationDate),
   status: status as BillStatus,
   customer: { connect: { id: customerId } },
   bank: { connect: { id: bankId } },

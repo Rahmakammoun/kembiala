@@ -19,12 +19,12 @@ export default function Header() {
   const menuRef = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
 
-  // Fermer le menu si clic à l'extérieur
+ 
  useEffect(() => {
   function handleClickOutside(event: MouseEvent) {
     const target = event.target as Node
 
-    // Si modal ouvert et clic en dehors du modal => fermer modal + menu
+  
     if (modalOpen) {
       if (modalRef.current && !modalRef.current.contains(target)) {
         setModalOpen(false)
@@ -33,7 +33,7 @@ export default function Header() {
       }
     }
 
-    // Sinon si menu ouvert et clic en dehors du menu => fermer menu
+   
     if (menuOpen) {
       if (menuRef.current && !menuRef.current.contains(target)) {
         setMenuOpen(false)
@@ -65,8 +65,7 @@ export default function Header() {
       return
     }
 
-    // Ici tu peux appeler une API pour changer le mot de passe
-    // Exemple fictif :
+   
     fetch('/api/users/change-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

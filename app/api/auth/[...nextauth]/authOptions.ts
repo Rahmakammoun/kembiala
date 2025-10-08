@@ -26,7 +26,7 @@ export const authOptions: NextAuthOptions = {
         const isValid = await compare(credentials!.password, user.password)
         if (!isValid) throw new Error("Mot de passe incorrect")
 
-          // Si ok, retourne un objet utilisateur minimal
+ 
         return { id: user.id, email: user.email, role: user.role }
       },
     }),

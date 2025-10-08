@@ -7,10 +7,10 @@ export async function GET() {
   try {
     const company = await prisma.company.findFirst({
       include: {
-        banks: true,  // Inclure toutes les banques liées à la company
+        banks: true,  
       },
     })
-    return NextResponse.json({ company }) // l'objet inclura banks[]
+    return NextResponse.json({ company }) 
   } catch (error) {
     return NextResponse.json({ error: 'Erreur lors de la récupération de la société' }, { status: 500 })
   }

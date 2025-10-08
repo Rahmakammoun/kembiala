@@ -1,10 +1,11 @@
+// pages/document.tsx
 'use client'
 
 import { useEffect, useState, ChangeEvent,useRef } from 'react'
 import Header from '../components/header'
 import Sidebar from '../components/sidebar'
 import "../app/globals.css";
-import PrintLayout from '../components/PrintLayout'
+
 
 type Bank = {
   id: string
@@ -50,6 +51,11 @@ export default function DocumentForm() {
   const [selectedBank, setSelectedBank] = useState<Bank | null>(null)
   const [creationDate] = useState(() => new Date().toISOString().split('T')[0])
 
+  const isEmpty = (v?: string) => !v || v.trim() === ''
+
+
+const isMontantInvalid = () => isEmpty(form.montant) || Number(form.montant) <= 0
+
   const [form, setForm] = useState<FormData>({
     numero: '',
     name: '',
@@ -83,7 +89,7 @@ export default function DocumentForm() {
       .catch(err => console.error('Erreur chargement société:', err))
 
     // fetch customers
-    fetch('/api/clients/list') // Remplace par le bon endpoint qui retourne ta liste clients
+    fetch('/api/clients/list') 
       .then(res => res.json())
       .then(data => {
         setCustomers(data.customers || [])
@@ -93,20 +99,21 @@ export default function DocumentForm() {
 
  
 
- /*  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  } */
+ 
+
+
 
 const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  
   const { name, value } = e.target
   const updatedForm = { ...form, [name]: value }
   if (name === 'numero') {
-    // Empêcher tout sauf chiffres et longueur max 12
-    const numericValue = value.replace(/\D/g, '') // Supprime tout sauf chiffres
+    
+    const numericValue = value.replace(/\D/g, '')
     if (numericValue.length <= 12) {
       updatedForm.numero = numericValue
     } else {
-      return // Ne met pas à jour si plus de 12 chiffres
+      return 
     }
   } 
 
@@ -128,7 +135,7 @@ function addOneDay(dateStr: string): string {
 const printRef = useRef<HTMLDivElement>(null)
 
 const handlePrint = async () => {
-  if (!form.echeance || !selectedBank || !form.beneficiaire || !form.montant) {
+  if (!form.echeance || !selectedBank || !form.beneficiaire || !form.montant ||!form.creationDate ||!form.aval||!form.lieu ||!form.name) {
     alert('Veuillez remplir tous les champs obligatoires.')
     return
   }
@@ -138,7 +145,7 @@ if (form.numero.length !== 12) {
 }
 
   try {
-    // Sauvegarde
+   
     const response = await fetch('/api/bills/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -160,7 +167,7 @@ if (form.numero.length !== 12) {
 
     alert('Kembiala enregistrée avec succès !')
 
-    // Déclenche impression
+   
     window.print()
 
   } catch (err) {
@@ -273,6 +280,7 @@ if (form.numero.length !== 12) {
               <div className="flex items-center mb-3">
                 <label className="w-40 font-medium">Agence bancaire:</label>
                 <select
+                
                 value={selectedBank?.bankName || ''}
                 onChange={(e) => {
                     console.log('Banque sélectionnée:', e.target.value)
@@ -305,7 +313,9 @@ if (form.numero.length !== 12) {
                     }))
                     }
                 }}
-                className="flex-1 border p-2 rounded"
+                className={`flex-1 border p-2 rounded ${
+    !selectedBank ? 'border-red-500' : 'border-gray-300'
+  }`}
                 >
                     <option value="">-- Choisir une banque --</option>
                 {company?.banks?.map((bank) => (
@@ -324,6 +334,7 @@ if (form.numero.length !== 12) {
     maxLength={2}
     value={form.rib1}
     onChange={handleChange}
+    readOnly
   />
   <input
     className="border p-2 rounded w-16"
@@ -331,6 +342,7 @@ if (form.numero.length !== 12) {
     maxLength={3}
     value={form.rib2}
     onChange={handleChange}
+    readOnly
   />
   <input
     className="border p-2 rounded w-40"
@@ -338,6 +350,7 @@ if (form.numero.length !== 12) {
     maxLength={13}
     value={form.rib3}
     onChange={handleChange}
+    readOnly
   />
   <input
     className="border p-2 rounded w-14"
@@ -345,6 +358,7 @@ if (form.numero.length !== 12) {
     maxLength={2}
     value={form.rib4}
     onChange={handleChange}
+    readOnly
   />
                 </div>
                 </div>
@@ -353,28 +367,33 @@ if (form.numero.length !== 12) {
 
               <div className="flex items-center mb-3">
   <label className="w-40 font-medium">Bénéficiaire:</label>
+ 
   <select
-    className="flex-1 border p-2 rounded"
-    name="beneficiaire"
-    value={form.beneficiaire}
-    onChange={(e) => setForm(prev => ({ ...prev, beneficiaire: e.target.value }))}
-  >
-    <option value="">-- Choisir un bénéficiaire --</option>
-    {customers.map(customer => (
-      <option key={customer.id} value={`${customer.nom} `}>
-        {customer.nom} 
-      </option>
-    ))}
-  </select>
+  className={`flex-1 border p-2 rounded ${
+    !form.beneficiaire ? 'border-red-500' : 'border-gray-300'
+  }`}
+  name="beneficiaire"
+  value={form.beneficiaire}
+  onChange={(e) => setForm(prev => ({ ...prev, beneficiaire: e.target.value }))}
+>
+  <option value="">-- Choisir un bénéficiaire --</option>
+  {customers.map(customer => (
+    <option key={customer.id} value={customer.nom}>
+      {customer.nom}
+    </option>
+  ))}
+</select>
 </div>
 
 
               <div className="flex items-center mb-3">
                 <label className="w-40 font-medium">Montant (chiffres):</label>
                 <div className="flex items-center gap-2 flex-1">
-                  <input className="border p-2 rounded w-40" name="montant" value={form.montant} onChange={handleChange} type='number' />
+                  <input className={`p-2 rounded w-40 border ${isMontantInvalid() ? 'border-red-500' : 'border-gray-300'}`} name="montant" value={form.montant} onChange={handleChange} type='number' />
                   <span>DT</span>
-                  <input className="border p-2 rounded w-24" name="millimes" value={form.millimes} onChange={handleChange} type='number' />
+                  <input className={`border p-2 rounded w-24 ${
+        !form.montant ? 'border-red-500' : 'border-gray-300'
+      }`}  name="millimes" value={form.millimes} onChange={handleChange} type='number' />
                   <span>m</span>
                 </div>
               </div>
@@ -386,7 +405,7 @@ if (form.numero.length !== 12) {
 
               <div className="flex justify-end mt-6 gap-4">
                 <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"onClick={handlePrintPreview}>Print Preview</button>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onClick={handlePrint}>Print</button>
+                <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onClick={handlePrint}>Imprimer</button>
               </div>
             </div>
           </div>
@@ -400,20 +419,15 @@ if (form.numero.length !== 12) {
   id="print-area"
   className="hidden print:block absolute top-0 left-0 w-full h-full bg-white text-black font-sans"
 >
-  {/* Mets ici le rendu complet de ton document à imprimer avec le positionnement */}
+  
   <div style={{ width: '800px', height: '1000px', position: 'relative', background: 'white', color: 'black', fontFamily: 'sans-serif' }}>
-    {/* Exemple simplifié */}
-    {/* <div style={{ position: 'absolute', top: 53, right: 520 }}>{form.echeance}</div>
-    <div style={{ position: 'absolute', top: 53, right: 390 }}>{creationDate}</div>
-    <div style={{ position: 'absolute', top: 33, right: 390 }}>{form.lieu}</div> */}
+ 
 
     <div style={{ position: 'absolute', top: 57, right: 520 }}>{form.echeance}</div>
     <div style={{ position: 'absolute', top: 61, right: 390 }}>{creationDate}</div>
     <div style={{ position: 'absolute', top: 41, right: 390 }}>{form.lieu}</div>
 
- {/*    <div style={{ position: 'absolute', top: 91, left: 185, letterSpacing: '0.1em' }}>
-  {`${form.rib1} `}&nbsp;&nbsp;{`${form.rib2}`}&nbsp;&nbsp;{`${form.rib3} `}&nbsp;{ ` ${form.rib4}`}
-</div> */}
+
 
 <div style={{ position: 'absolute', top: 90, left: 185 }}>
   <span style={{ position: 'absolute', left: 0 }}>{form.rib1}</span>
@@ -426,11 +440,11 @@ if (form.numero.length !== 12) {
 
 
 
-    <div style={{ position: 'absolute', top: 90, right: 220 }}>{`${form.montant}.${form.millimes} DT`}</div>
+    <div style={{ position: 'absolute', top: 90, right: 220 }}>{`${form.montant}.${form.millimes.padStart(3, '0')} DT`}</div>
 
     <div style={{ position: 'absolute', top: 150, left: 183 }}>{form.beneficiaire}</div>
 
-    <div style={{ position: 'absolute', top: 145, right: 220 }}>{`${form.montant}.${form.millimes} DT`}</div>
+    <div style={{ position: 'absolute', top: 145, right: 220 }}>{`${form.montant}.${form.millimes.padStart(3, '0')} DT`}</div>
 
     <div style={{ position: 'absolute', top: 178, left: 20, textTransform: 'capitalize' }}>{form.montantLettre}</div>
 
@@ -438,17 +452,21 @@ if (form.numero.length !== 12) {
       <div className="absolute top-[210px] left-[114px]">{creationDate}</div>
       <div className="absolute top-[210px] left-[210px]">{form.echeance}</div>
       <div className="absolute top-[250px] left-[11px] ">
-        <span style={{ position: 'absolute', left: 2 }}>{form.rib1}</span>
+        <span style={{ position: 'absolute', left: 3 }}>{form.rib1}</span>
         <span style={{ position: 'absolute', left: 28 }}>{form.rib2}</span>
         <span style={{ position: 'absolute', left: 95 }}>{form.rib3}</span>
-        <span style={{ position: 'absolute', left: 237 }}>{form.rib4}</span>
+        <span style={{ position: 'absolute', left: 238 }}>{form.rib4}</span>
       </div>
 
 
-      <div className="absolute top-[300px] left-[144px] w-[150px]">{form.aval}</div>
+      <div className="absolute top-[300px] left-[145px] w-[150px]">{form.aval}</div>
+      <div className="absolute top-[250px] right-[195px] w-[170px]">
+  {selectedBank?.bankName}
+</div>
+      
 
       <div className="absolute top-[272px] left-[285px] w-[150px] break-words whitespace-pre-wrap">
-  {form.name}</div>
+     {form.name}</div>
   </div>
 </div>
 
@@ -460,11 +478,24 @@ if (form.numero.length !== 12) {
   
 }
 
-function Input({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+
+function Input({ label, name, value, ...props }: { label: string; name: string; value: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+  const isFieldInvalid = (name: string, value: string) => {
+  return !value || value.trim() === '';
+};
+  const isInvalid = isFieldInvalid(name, value);
+  
   return (
     <div className="flex items-center mb-3">
       <label className="w-40 font-medium">{label}</label>
-      <input className="flex-1 border p-2 rounded" {...props} />
+      <input
+        className={`flex-1 border p-2 rounded ${
+          isInvalid ? 'border-red-500' : 'border-gray-300'
+        }`}
+        name={name}
+        value={value}
+        {...props}
+      />
     </div>
   )
 }
@@ -490,7 +521,7 @@ function convertirNombreEnLettres(n: number): string {
 
     if (c > 0) {
       str += c > 1 ? unités[c] + ' cent' : 'cent'
-      if (r === 0 && c > 1) str += 's' // plural "cents" si pas de reste
+      if (r === 0 && c > 1) str += 's' 
     }
 
     if (r > 0) {

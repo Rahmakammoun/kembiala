@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
-import { sendPasswordEmail } from '@/lib/mail' // ← adapte le chemin
+import { sendPasswordEmail } from '@/lib/mail'
 
 const prisma = new PrismaClient()
 
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // 📩 Envoi de l'e-mail
+    // Envoi de l'e-mail
     await sendPasswordEmail(email, plainPassword)
 
     return NextResponse.json({ message: 'Utilisateur créé et e-mail envoyé' })

@@ -31,6 +31,12 @@ export async function GET() {
         aval: bill.aval,
         lieu: bill.lieu,
         
+          bank: {                    
+    id: bill.bank.id,
+    bankName: bill.bank.bankName,
+    rib: bill.bank.rib,      
+  },
+        
     }))
     
 
