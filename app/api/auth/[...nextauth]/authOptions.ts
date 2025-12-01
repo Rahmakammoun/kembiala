@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
         token.id = Number(user.id)
         token.role = user.role
       }
-      console.log("💥 JWT token :", token)
+      console.log(" JWT token :", token)
       return token
     },
   },

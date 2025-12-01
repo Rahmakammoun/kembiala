@@ -13,7 +13,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (session) {
     return {
       redirect: {
-        destination: "/dashboard",
+        destination: "/document",
         permanent: false,
       },
     }
@@ -32,7 +32,7 @@ export default function Login() {
 
   useEffect(() => {
     if (status === 'authenticated') {
-      router.replace('/dashboard')
+      router.replace('/document')
     }
   }, [status])
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,14 +41,14 @@ export default function Login() {
       redirect: false,
       email,
       password,
-      callbackUrl: '/dashboard',
+      callbackUrl: '/document',
     })
 
     if (res?.error) {
       setError(res.error)
-      console.error('❌ Erreur de connexion :', res.error)
+      console.error(' Erreur de connexion :', res.error)
     } else if (res?.ok && res.url) {
-      console.log('✅ Connexion réussie ! Redirection vers', res.url)
+      console.log('Connexion réussie ! Redirection vers', res.url)
       router.push(res.url)
     }
   }

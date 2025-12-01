@@ -415,7 +415,7 @@ if (form.numero.length !== 12) {
 
  
       </main>
-      <div
+ <div
   id="print-area"
   className="hidden print:block absolute top-0 left-0 w-full h-full bg-white text-black font-sans"
 >
@@ -429,12 +429,12 @@ if (form.numero.length !== 12) {
 
 
 
-<div style={{ position: 'absolute', top: 90, left: 185 }}>
-  <span style={{ position: 'absolute', left: 0 }}>{form.rib1}</span>
-  <span style={{ position: 'absolute', left: 40 }}>{form.rib2}</span>
-  <span style={{ position: 'absolute', left: 95 }}>{form.rib3}</span>
-  <span style={{ position: 'absolute', left: 242 }}>{form.rib4}</span>
-</div>
+    <div style={{ position: 'absolute', top: 90, left: 185 }}>
+      <span style={{ position: 'absolute', left: 0 }}>{form.rib1}</span>
+      <span style={{ position: 'absolute', left: 40 }}>{form.rib2}</span>
+      <span style={{ position: 'absolute', left: 95 }}>{form.rib3}</span>
+      <span style={{ position: 'absolute', left: 242 }}>{form.rib4}</span>
+    </div>
 
 
 
@@ -461,12 +461,13 @@ if (form.numero.length !== 12) {
 
       <div className="absolute top-[300px] left-[145px] w-[150px]">{form.aval}</div>
       <div className="absolute top-[250px] right-[195px] w-[170px]">
-  {selectedBank?.bankName}
-</div>
+        {selectedBank?.bankName}
+   </div>
       
 
       <div className="absolute top-[272px] left-[285px] w-[150px] break-words whitespace-pre-wrap">
-     {form.name}</div>
+         {form.name}
+      </div>
   </div>
 </div>
 

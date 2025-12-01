@@ -55,4 +55,12 @@ body {
     background: white;
     color: black;
   }
+
 }
+@media print {
+  #print-area > div {
+    transform: scale(1.55);
+    transform-origin: top left;
+  }
+}
+
