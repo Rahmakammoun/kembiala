@@ -1,43 +1,86 @@
 // app/api/bank/create/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const { amount, millimes, dueDate, customerName,companyName, aval, lieu, bankName, numero  } = body
+    const body = await req.json();
+    const {
+      amount,
+      millimes,
+      dueDate,
+      customerName,
+      companyName,
+      aval,
+      lieu,
+      bankName,
+      numero,
+    } = body;
 
-    if (!amount || !dueDate || !customerName || !bankName|| !numero ||!companyName ||!aval||!aval) {
-      return NextResponse.json({ message: 'Champs manquants' }, { status: 400 })
+    if (
+      !amount ||
+      !dueDate ||
+      !customerName ||
+      !bankName ||
+      !numero ||
+      !companyName ||
+      !aval ||
+      !aval
+    ) {
+      return NextResponse.json(
+        { message: "Champs manquants" },
+        { status: 400 },
+      );
+    }
+
+    // Validate that dueDate is not in the past (should be >= creation date)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDateObj = new Date(dueDate);
+    dueDateObj.setHours(0, 0, 0, 0);
+
+    if (dueDateObj < today) {
+      return NextResponse.json(
+        {
+          message:
+            "La date d'échéance ne peut pas être inférieure à la date actuelle",
+        },
+        { status: 400 },
+      );
     }
 
     // Rechercher le client
-    const nom = customerName.trim()
+    const nom = customerName.trim();
 
     const customer = await prisma.customer.findFirst({
       where: {
         nom,
-       
-      }
-    })
+      },
+    });
 
     if (!customer) {
-      return NextResponse.json({ message: 'Client introuvable' }, { status: 404 })
+      return NextResponse.json(
+        { message: "Client introuvable" },
+        { status: 404 },
+      );
     }
 
     // Rechercher la banque
     const bank = await prisma.bank.findFirst({
       where: {
-        bankName
-      }
-    })
+        bankName,
+      },
+    });
 
     if (!bank) {
-      return NextResponse.json({ message: 'Banque introuvable' }, { status: 404 })
+      return NextResponse.json(
+        { message: "Banque introuvable" },
+        { status: 404 },
+      );
     }
 
-    const totalAmount = parseFloat(amount) + parseFloat(millimes || '0') / 1000
+    const totalAmount = parseFloat(amount) + parseFloat(millimes || "0") / 1000;
 
     // Créer la facture
     const bill = await prisma.bill.create({
@@ -45,20 +88,18 @@ export async function POST(req: NextRequest) {
         numero,
         amount: totalAmount,
         dueDate: new Date(dueDate),
-        status: 'non_payé',
+        status: "non_payé",
         companyName,
         aval,
         lieu,
         customerId: customer.id,
         bankId: bank.id,
-        
-      }
-    })
+      },
+    });
 
-    return NextResponse.json({ bill }, { status: 201 })
-
+    return NextResponse.json({ bill }, { status: 201 });
   } catch (error) {
-    console.error('[POST /api/bills/create]', error)
-    return NextResponse.json({ message: 'Erreur serveur' }, { status: 500 })
+    console.error("[POST /api/bills/create]", error);
+    return NextResponse.json({ message: "Erreur serveur" }, { status: 500 });
   }
 }
